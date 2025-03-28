@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Take Place Price Calculator - Webflow Embed Example</title>
+  
+  <!-- Include the embed styles -->
+  <link rel="stylesheet" href="embed-styles.css">
+  
+  <!-- Optional: Additional Webflow-specific styling -->
+  <style>
+    /* You can add additional custom styling here */
+    body {
+      font-family: sans-serif;
+      line-height: 1.5;
+      color: #333;
+    }
+    
+    .example-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    
+    .example-note {
+      background-color: #f8f9fa;
+      border-left: 4px solid #000;
+      padding: 15px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="example-container">
+    <h1>Take Place Price Calculator Example</h1>
+    
+    <div class="example-note">
+      <p><strong>Note:</strong> This is an example of how to embed the Take Place Price Calculator in your Webflow site. Replace the iframe URLs with your actual deployed calculator URLs.</p>
+    </div>
+    
+    <!-- Calculator Container Start -->
+    <div class="calculator-container">
+      <div class="sliders-model-container">
+        <!-- Sliders Component -->
+        <div class="sliders-container iframe-container">
+          <iframe src="YOUR_DEPLOYED_URL/embed/sliders" class="calculator-iframe sliders-iframe"></iframe>
+        </div>
+        
+        <!-- 3D Model Component -->
+        <div class="model-container iframe-container">
+          <iframe src="YOUR_DEPLOYED_URL/embed/model" class="calculator-iframe model-iframe"></iframe>
+        </div>
+      </div>
+    </div>
+    <!-- Calculator Container End -->
+    
+    <div class="example-note">
+      <p><strong>Important:</strong> The CSS classes used above (<code>calculator-container</code>, <code>sliders-model-container</code>, etc.) are defined in the <code>embed-styles.css</code> file. Make sure to include this CSS in your Webflow site.</p>
+    </div>
+  </div>
+</body>
+</html> 

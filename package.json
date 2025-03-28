@@ -1,0 +1,42 @@
+{
+  "dependencies": {
+    "@headlessui/react": "^2.2.0",
+    "@react-three/drei": "^9.77.3",
+    "@react-three/fiber": "^8.13.3",
+    "@types/three": "^0.174.0",
+    "framer-motion": "^12.5.0",
+    "next": "^14.1.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "three": "^0.153.0",
+    "use-sync-external-store": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/react": "^19.0.12",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.2"
+  },
+  "name": "pricing-calculator",
+  "version": "1.0.0",
+  "description": "Take Place Dynamic Pricing Calculator",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/royceotoole/pricing-calculator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/royceotoole/pricing-calculator/issues"
+  },
+  "homepage": "https://github.com/royceotoole/pricing-calculator#readme"
+}

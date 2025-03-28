@@ -1,0 +1,183 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Always show scrollbar to prevent layout shifts */
+html {
+  overflow-y: scroll;
+}
+
+@font-face {
+  font-family: 'Quadrant';
+  src: url('/fonts/QuadrantText-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Suisse Intl Mono';
+  src: url('/fonts/SuisseIntlMono-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NeueHaasGroteskDisplayPro';
+  src: url('/fonts/NeueHaasGroteskDisplayPro45Light.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NeueHaasGroteskDisplayPro';
+  src: url('/fonts/NeueHaasGroteskDisplayPro55Roman.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'NeueHaasGroteskDisplayPro';
+  src: url('/fonts/NeueHaasGroteskDisplayPro65Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  font-family: 'NeueHaasGroteskDisplayPro', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.01em;
+  font-weight: 400;
+}
+
+/* Three.js canvas container */
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+}
+
+/* Main title styling */
+h1 {
+  font-family: 'Quadrant', serif;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+  font-weight: 300;
+}
+
+/* Square footage numbers and price displays */
+.mono-display {
+  font-family: 'Suisse Intl Mono', monospace;
+  font-weight: 400;
+}
+
+.mono-display-large {
+  font-family: 'Suisse Intl Mono', monospace;
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.mono-display-small {
+  font-family: 'Suisse Intl Mono', monospace;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.mono-display-gray {
+  font-family: 'Suisse Intl Mono', monospace;
+  font-size: 14px;
+  font-weight: 400;
+  color: #808080;
+}
+
+/* Grey button styling */
+.btn-grey {
+  background-color: rgba(0, 0, 0, 0.06);
+  border: 0.8px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  padding: 6px 14px;
+  transition: background-color 0.2s;
+}
+
+.btn-grey:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Custom slider styling */
+input[type="range"] {
+  height: 2px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  appearance: none;
+  margin: 10px 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: #000;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 6px solid white;
+  box-shadow: 0 0 0 1px #000;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: #000;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 6px solid white;
+  box-shadow: 0 0 0 1px #000;
+}
+
+/* Custom checkbox styling */
+input[type="checkbox"] {
+  appearance: none;
+  background-color: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #000;
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Make iframe embeds more responsive */
+@media (max-width: 768px) {
+  .mono-display-large {
+    font-size: 18px;
+  }
+  
+  .mono-display-small {
+    font-size: 12px;
+  }
+} 
