@@ -202,7 +202,7 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
           onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the tooltip
           ref={tooltipRef}
         >
-          <div className="relative p-4 bg-black text-white rounded shadow-lg z-20">
+          <div className="relative p-4 bg-black text-white rounded shadow-lg z-20" style={{ letterSpacing: "0.02em" }}>
             {/* Show close button for all positions */}
             <button 
               onClick={() => {
