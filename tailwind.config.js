@@ -13,6 +13,12 @@ module.exports = {
       letterSpacing: {
         'neue': '0.01em',
       },
+      fontWeight: {
+        // Override Tailwind's default bold to use 500 weight (Medium)
+        normal: 400,
+        medium: 500,
+        bold: 500, // Use Medium weight for bold
+      },
     },
   },
   plugins: [],
