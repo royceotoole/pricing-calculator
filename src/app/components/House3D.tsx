@@ -50,17 +50,15 @@ export default function House3D() {
   React.useEffect(() => {
     const updateDimensions = () => {
       const width = window.innerWidth;
-      const viewportHeight = window.innerHeight;
       
-      // More compact sizing for mobile devices
+      // Fixed heights that are 25% shorter than before
+      // Previously: mobile up to 500px (60% of viewport), desktop up to 500px
+      // Now: mobile 375px (fixed), desktop 375px (fixed)
       const isMobile = width < 768;
       
-      // For mobile: 60% of viewport height as requested
-      // For desktop: maintain aspect ratio but cap at 500px
-      const height = isMobile 
-        ? Math.min(viewportHeight * 0.6, 500) 
-        : Math.min(500, width * 0.7);
-        
+      // Use fixed heights rather than viewport percentages to prevent content shifting
+      const height = 375; // 25% shorter than the previous 500px max
+      
       setDimensions({ width, height });
     };
     
@@ -74,12 +72,12 @@ export default function House3D() {
   
   return (
     <ErrorBoundary>
-      {/* Container with proper dimensions */}
+      {/* Container with fixed dimensions */}
       <div 
         className="w-full relative"
         style={{ 
           height: dimensions.height,
-          maxHeight: '500px',
+          maxHeight: '375px', // 25% shorter than previous 500px
           overflow: 'hidden',
           borderRadius: '8px',
           margin: '0 auto',

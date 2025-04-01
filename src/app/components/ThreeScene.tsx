@@ -474,20 +474,11 @@ function CameraController() {
   
   // Set up camera position and track movement
   useEffect(() => {
-    // Adjust camera distance based on screen width
-    const getResponsiveRadius = () => {
-      if (typeof window === 'undefined') return 7;
-      
-      const width = window.innerWidth;
-      // Adjust camera distance for better mobile view
-      if (width < 480) return 7.5; // Extra small devices
-      if (width < 768) return 7;   // Small devices
-      if (width < 1024) return 7; // Medium devices
-      return 7; // Desktop default
-    };
+    // Use a fixed radius (camera distance) for all devices
+    // This ensures consistent positioning regardless of container size changes
+    const radius = 7;
     
     // Base 45-degree isometric view settings
-    const radius = getResponsiveRadius();
     const baseX = 0.785; // 45 degrees in radians (45°)
     const baseY = 0.35;  // Slight elevation (20°)
     
@@ -570,15 +561,15 @@ function CameraController() {
     gl.domElement.addEventListener('touchend', handleTouchEnd);
     gl.domElement.addEventListener('touchcancel', handleTouchEnd);
     
-    // Animation loop for camera movement
+    // Animation loop for camera movement - reduced motion for stability
     const animate = () => {
       const animationId = requestAnimationFrame(animate);
       
       if (pointer.current.isOver && camera) {
         // Calculate new camera position with gentle rotation
-        // Different rotation ranges for horizontal vs vertical movement
-        const horizontalRotationRange = 0.45; // Much larger horizontal range (±25°)
-        const verticalRotationRange = 0.26; // Keep vertical range the same (±15°)
+        // Reduced rotation ranges for more stability
+        const horizontalRotationRange = 0.35; // Reduced horizontal range
+        const verticalRotationRange = 0.18; // Reduced vertical range
         
         // Apply pointer position to adjust base angles
         // Reverse the x direction and apply stronger horizontal effect
@@ -590,9 +581,9 @@ function CameraController() {
         const newZ = Math.cos(x) * Math.cos(y) * radius;
         const newY = Math.sin(y) * radius + centerPoint.y;
         
-        // Increase interpolation speed for more responsive movement
-        const horizontalSpeed = 0.09; // Faster horizontal response
-        const verticalSpeed = 0.07;   // Keep vertical speed the same
+        // Use slower interpolation for more stable movement
+        const horizontalSpeed = 0.06;
+        const verticalSpeed = 0.05;
         
         // Apply different speeds to different axes
         camera.position.x += (newX - camera.position.x) * horizontalSpeed;
@@ -634,15 +625,16 @@ const getDevicePixelRatio = () => {
 
 // Helper to get responsive zoom level based on screen width
 const getResponsiveZoom = () => {
-  if (typeof window === 'undefined') return 48; // Default zoom for SSR
+  if (typeof window === 'undefined') return 45; // Default zoom for SSR
   
   const width = window.innerWidth;
   
-  // Adjusted zoom values for better fit in mobile view
-  if (width < 480) return 30; // Extra small devices
-  if (width < 768) return 35; // Small devices
-  if (width < 1024) return 40; // Medium devices
-  return 48; // Desktop default zoom
+  // Increase zoom values by 15% to match the 25% smaller container
+  // This ensures the model appears the same relative size in the smaller container
+  if (width < 480) return 35; // Extra small devices
+  if (width < 768) return 40; // Small devices
+  if (width < 1024) return 45; // Medium devices
+  return 55; // Desktop default zoom
 };
 
 // Check WebGL support
@@ -789,7 +781,8 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
           width: '100%', 
           height: '100%',
           display: 'block',
-          touchAction: 'none' // Disable browser touch actions
+          touchAction: 'none', // Disable browser touch actions
+          position: 'absolute' // Ensure canvas stays fixed in container
         }}
         dpr={dpr}
         camera={{ 
@@ -815,7 +808,7 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
         <pointLight position={[10, 10, 10]} intensity={0.8} />
         <directionalLight position={[5, 10, 5]} intensity={0.8} castShadow />
         
-        {/* Center the house model vertically in the container */}
+        {/* Make sure position is consistent */}
         <group position={[0, 0, 0]}>
           <HouseModel totalSize={totalSize} secondStorySize={secondStorySize} />
         </group>
