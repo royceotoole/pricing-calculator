@@ -55,10 +55,10 @@ export default function House3D() {
       // More compact sizing for mobile devices
       const isMobile = width < 768;
       
-      // For mobile: 40% of viewport height to reduce bottom space
+      // For mobile: 60% of viewport height as requested
       // For desktop: maintain aspect ratio but cap at 500px
       const height = isMobile 
-        ? Math.min(viewportHeight * 0.4, 320) 
+        ? Math.min(viewportHeight * 0.6, 500) 
         : Math.min(500, width * 0.7);
         
       setDimensions({ width, height });
@@ -74,7 +74,7 @@ export default function House3D() {
   
   return (
     <ErrorBoundary>
-      {/* Tighter container with less empty space */}
+      {/* Container with proper dimensions */}
       <div 
         className="w-full relative"
         style={{ 

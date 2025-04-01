@@ -456,7 +456,7 @@ function HouseModel({ totalSize, secondStorySize }: ThreeSceneProps) {
 function CameraController() {
   const { camera, gl } = useThree();
   
-  // Calculate the center point of the second floor plate
+  // Calculate the center point of the second floor plate - now centered at 0
   const centerPoint = useMemo(() => {
     return new THREE.Vector3(0, 26/10/2, 0); // Center of the second floor (height is now 26)
   }, []);
@@ -479,10 +479,10 @@ function CameraController() {
       if (typeof window === 'undefined') return 7;
       
       const width = window.innerWidth;
-      // Use a larger radius (camera further away) for mobile
-      if (width < 480) return 8.5; // Extra small devices
-      if (width < 768) return 8;   // Small devices
-      if (width < 1024) return 7.5; // Medium devices
+      // Adjust camera distance for better mobile view
+      if (width < 480) return 7.5; // Extra small devices
+      if (width < 768) return 7;   // Small devices
+      if (width < 1024) return 7; // Medium devices
       return 7; // Desktop default
     };
     
@@ -638,10 +638,10 @@ const getResponsiveZoom = () => {
   
   const width = window.innerWidth;
   
-  // Further reduced zoom values for more compact container
-  if (width < 480) return 24; // Extra small devices - much further away
-  if (width < 768) return 28; // Small devices - further away
-  if (width < 1024) return 36; // Medium devices
+  // Adjusted zoom values for better fit in mobile view
+  if (width < 480) return 30; // Extra small devices
+  if (width < 768) return 35; // Small devices
+  if (width < 1024) return 40; // Medium devices
   return 48; // Desktop default zoom
 };
 
@@ -815,8 +815,8 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
         <pointLight position={[10, 10, 10]} intensity={0.8} />
         <directionalLight position={[5, 10, 5]} intensity={0.8} castShadow />
         
-        {/* Adjust the position for vertical centering - slightly shifted up for better fit */}
-        <group position={[0, -0.3, 0]}>
+        {/* Center the house model vertically in the container */}
+        <group position={[0, 0, 0]}>
           <HouseModel totalSize={totalSize} secondStorySize={secondStorySize} />
         </group>
       </Canvas>
@@ -839,7 +839,7 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
         </div>
       )}
 
-      {/* Legend in bottom left corner */}
+      {/* Legend in bottom left corner - ensuring proper positioning on mobile */}
       {isLoaded && (
         <div style={{
           position: 'absolute',
