@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       Key: fileName,
       Body: buffer,
       ContentType: contentType,
-      ACL: 'public-read', // Make the file publicly accessible
+      ACL: 'public-read' as const, // Properly typed as ObjectCannedACL
     };
     
     await s3.send(new PutObjectCommand(params));

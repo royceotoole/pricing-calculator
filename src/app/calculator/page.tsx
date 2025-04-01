@@ -199,7 +199,7 @@ export default function Calculator() {
         <div className="text-gray-600">Location: {location}</div>
       </div>
 
-      <div className="space-y-9 mb-[150px]">
+      <div className="space-y-9 mb-[150px] md:mb-[200px] lg:mb-[230px]">
         {/* Total Size Slider */}
         <div>
           <div className="flex justify-between items-center mb-4">
