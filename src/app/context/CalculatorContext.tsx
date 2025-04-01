@@ -103,8 +103,8 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
 
   // Adjust secondStorySize when mainFloorSize changes to maintain totalSize
   const updateMainFloorSize = (size: number) => {
-    // Ensure the value is a multiple of the current module size
-    const adjustedSize = Math.floor(size / MODULE_SIZES.GROSS) * MODULE_SIZES.GROSS
+    // Ensure the value is a multiple of 104 (gross module size)
+    const adjustedSize = Math.floor(size / 104) * 104
     
     // Calculate the new second story size
     const newSecondStorySize = totalSize - adjustedSize
@@ -112,8 +112,8 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     // Make sure second story size doesn't exceed max (50% of total)
     const maxSecondStory = Math.floor(totalSize / 2)
     
-    // Set minimum second story size (3 modules)
-    const minSecondStory = 3 * MODULE_SIZES.GROSS
+    // Set minimum second story size (3 modules = 312 sqft)
+    const minSecondStory = 312
     
     if (newSecondStorySize <= maxSecondStory && newSecondStorySize >= minSecondStory) {
       // Update both values

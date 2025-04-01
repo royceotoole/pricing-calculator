@@ -98,9 +98,9 @@ export default function Calculator() {
           </div>
           <input
             type="range"
-            min={8 * moduleSize}
-            max={40 * moduleSize}
-            step={moduleSize}
+            min={832} // Fixed at 8 * 104 (gross modules)
+            max={4160} // Fixed at 40 * 104 (gross modules)
+            step={104} // Fixed gross module size
             value={totalSize}
             onChange={(e) => setTotalSize(Number(e.target.value))}
             className="w-full accent-black"
@@ -118,8 +118,8 @@ export default function Calculator() {
           <input
             type="range"
             min={Math.ceil(totalSize / 2)}
-            max={totalSize - (3 * moduleSize)} // Ensure at least 3 modules remain for second floor
-            step={moduleSize}
+            max={totalSize - 312} // Ensure at least 3 gross modules (312 sqft) remain for second floor
+            step={104} // Fixed gross module size
             value={mainFloorSize}
             onChange={(e) => {
               const newValue = Number(e.target.value)
@@ -155,16 +155,16 @@ export default function Calculator() {
           </div>
           <input
             type="range"
-            min={3 * moduleSize}
+            min={312} // Fixed at 3 * 104 (gross modules)
             max={Math.floor(totalSize / 2)}
-            step={moduleSize}
+            step={104} // Fixed gross module size
             value={secondStorySize}
             onChange={(e) => {
               const newValue = Number(e.target.value)
-              // Ensure the value is a multiple of the module size, at least 3 modules, and doesn't exceed half of total size
+              // Ensure the value is a multiple of 104, at least 312, and doesn't exceed half of total size
               const maxValue = Math.floor(totalSize / 2)
-              const minValue = 3 * moduleSize
-              const adjustedValue = Math.max(minValue, Math.min(maxValue, Math.floor(newValue / moduleSize) * moduleSize))
+              const minValue = 312
+              const adjustedValue = Math.max(minValue, Math.min(maxValue, Math.floor(newValue / 104) * 104))
               setSecondStorySize(adjustedValue)
             }}
             className="w-full accent-black"
