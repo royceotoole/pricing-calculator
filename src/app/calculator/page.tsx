@@ -342,9 +342,6 @@ export default function Calculator() {
                         <p className="text-sm mb-2">
                           Our Base Price includes our entire kit, complete with our Take Place base finish package, premium Fisher & Paykel appliances, white-glove design service, on-site assembly, and MEP trades.
                         </p>
-                        <p className="text-sm italic mb-2">
-                          Note: Standard Fisher & Paykel appliances are already included. Premium appliance upgrades are available (up to $12,000).
-                        </p>
                         <p className="text-sm font-bold mb-2">Extra Costs</p>
                         <p className="text-sm mb-2">
                           We don't include certain items in our Base Price because they can vary significantly based on the specifics of your location, property, and individual preferences. These items are:
