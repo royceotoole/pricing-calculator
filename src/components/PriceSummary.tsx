@@ -3,6 +3,7 @@
 import React from 'react'
 import { useCalculator } from '../app/context/CalculatorContext'
 import InfoIcon from './InfoIcon'
+import { getTypeformUrl, isDevelopment } from '../config/typeform'
 
 interface PriceSummaryProps {
   className?: string;
@@ -10,22 +11,53 @@ interface PriceSummaryProps {
 }
 
 export default function PriceSummary({ className = '', showButton = true }: PriceSummaryProps) {
-  const { estimatedPrice, totalSize, location, isEarlyAdopter } = useCalculator()
+  const { estimatedPrice, totalSize, location, isEarlyAdopter, getPriceDataForTypeForm, displayTotalSize } = useCalculator()
   
   const openTypeform = () => {
-    // Get all slider values from context
+    // Get all data from context
+    const typeformData = getPriceDataForTypeForm();
+    
+    // Convert to URL parameters
     const typeformParams = new URLSearchParams({
-      'province': location,
-      'total_size': totalSize.toString(),
-      'main_floor_size': (totalSize - totalSize).toString(),
-      'second_floor_size': totalSize.toString(),
-      'early_adopter': isEarlyAdopter ? 'Yes' : 'No',
-      'estimated_price': estimatedPrice.toString(),
-      'price_per_sqft': Math.round(estimatedPrice / totalSize).toString()
+      // Location details
+      'province': typeformData.location,
+      
+      // Size details (using display values based on selected floor area type)
+      'total_size': typeformData.totalSize.toString(),
+      'main_floor_size': typeformData.mainFloorSize.toString(),
+      'second_floor_size': typeformData.secondStorySize.toString(),
+      'floor_area_type': typeformData.floorAreaType,
+      
+      // Price details
+      'base_price': typeformData.baseEstimate.toString(),
+      'price_per_sqft': Math.round(typeformData.baseEstimate / typeformData.totalSize).toString(),
+      
+      // Additional costs
+      'foundation_estimate': typeformData.foundationEstimate.toString(),
+      'delivery_estimate': typeformData.deliveryEstimate.toString(),
+      'electrical_hookup_estimate': typeformData.electricalHookupEstimate.toString(),
+      'sewer_water_septic_min': typeformData.sewerWaterSepticEstimateMin.toString(),
+      'sewer_water_septic_max': typeformData.sewerWaterSepticEstimateMax.toString(),
+      'permit_fees_estimate': typeformData.permitFeesEstimate.toString(),
+      
+      // Total estimates
+      'grand_total_min': typeformData.grandTotalMin.toString(),
+      'grand_total_max': typeformData.grandTotalMax.toString(),
+      'grand_total_average': typeformData.grandTotalAverage.toString(),
+      
+      // Early adopter status
+      'early_adopter': typeformData.isEarlyAdopter ? 'Yes' : 'No',
     }).toString();
     
-    // Replace with your actual Typeform URL
-    const typeformUrl = `https://form.typeform.com/to/XXXXX?${typeformParams}`;
+    // Show parameter log in development
+    if (isDevelopment) {
+      console.log('TypeForm Parameters:', Object.fromEntries(new URLSearchParams(typeformParams)));
+    }
+    
+    // Get the full TypeForm URL from config
+    const typeformUrl = getTypeformUrl(typeformParams);
+    
+    // Open TypeForm in a new tab
     window.open(typeformUrl, '_blank');
   };
 
@@ -66,7 +98,7 @@ export default function PriceSummary({ className = '', showButton = true }: Pric
           <span className="mono-display-large">${estimatedPrice.toLocaleString()}</span>
         </div>
         <div className="text-right flex justify-end items-center">
-          <span className="mono-display-gray">${Math.round(estimatedPrice / totalSize)}/SQFT</span>
+          <span className="mono-display-gray">${Math.round(estimatedPrice / displayTotalSize)}/SQFT</span>
           
           {/* Cost per SQFT info button */}
           <InfoIcon

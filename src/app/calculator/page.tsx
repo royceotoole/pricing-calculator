@@ -8,6 +8,7 @@ import { useCalculator, FloorAreaType, MODULE_SIZES } from '../context/Calculato
 import { PRICING_CONSTANTS, PROVINCIAL_MULTIPLIERS } from '../../data/pricingData'
 import PriceDataLogger from '../components/PriceDataLogger'
 import InfoIcon from '../../components/InfoIcon'
+import { getTypeformUrl, isDevelopment } from '../../config/typeform'
 
 // Dynamically import the House3D component with no SSR
 const House3D = dynamic(() => import('../components/House3D'), { 
@@ -30,6 +31,7 @@ export default function Calculator() {
     setFloorAreaType,
     estimatedPrice,
     moduleSize,
+    getPriceDataForTypeForm,
     // Display values
     displayTotalSize,
     displaySecondStorySize,
@@ -60,6 +62,55 @@ export default function Calculator() {
       setMainFloorSize(newMainFloor)
     }
   }, [totalSize, secondStorySize, setSecondStorySize, setMainFloorSize])
+
+  // Function to open TypeForm with all calculator data
+  const openTypeform = () => {
+    // Get all data from context
+    const typeformData = getPriceDataForTypeForm();
+    
+    // Convert to URL parameters
+    const typeformParams = new URLSearchParams({
+      // Location details
+      'province': typeformData.location,
+      
+      // Size details (using display values based on selected floor area type)
+      'total_size': typeformData.totalSize.toString(),
+      'main_floor_size': typeformData.mainFloorSize.toString(),
+      'second_floor_size': typeformData.secondStorySize.toString(),
+      'floor_area_type': typeformData.floorAreaType,
+      
+      // Price details
+      'base_price': typeformData.baseEstimate.toString(),
+      'price_per_sqft': Math.round(typeformData.baseEstimate / typeformData.totalSize).toString(),
+      
+      // Additional costs
+      'foundation_estimate': typeformData.foundationEstimate.toString(),
+      'delivery_estimate': typeformData.deliveryEstimate.toString(),
+      'electrical_hookup_estimate': typeformData.electricalHookupEstimate.toString(),
+      'sewer_water_septic_min': typeformData.sewerWaterSepticEstimateMin.toString(),
+      'sewer_water_septic_max': typeformData.sewerWaterSepticEstimateMax.toString(),
+      'permit_fees_estimate': typeformData.permitFeesEstimate.toString(),
+      
+      // Total estimates
+      'grand_total_min': typeformData.grandTotalMin.toString(),
+      'grand_total_max': typeformData.grandTotalMax.toString(),
+      'grand_total_average': typeformData.grandTotalAverage.toString(),
+      
+      // Early adopter status
+      'early_adopter': typeformData.isEarlyAdopter ? 'Yes' : 'No',
+    }).toString();
+    
+    // Show parameter log in development
+    if (isDevelopment) {
+      console.log('TypeForm Parameters:', Object.fromEntries(new URLSearchParams(typeformParams)));
+    }
+    
+    // Get the full TypeForm URL from config
+    const typeformUrl = getTypeformUrl(typeformParams);
+    
+    // Open TypeForm in a new tab
+    window.open(typeformUrl, '_blank');
+  };
 
   return (
     <main className="min-h-screen px-8 py-8 w-full mx-auto font-['NeueHaasGroteskDisplayPro'] relative" style={{ maxWidth: "36rem", letterSpacing: "0.01em" }}>
@@ -319,7 +370,11 @@ export default function Calculator() {
             </div>
 
             {/* Book Meeting Button */}
-            <button className="w-full py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-['NeueHaasGroteskDisplayPro']" style={{ letterSpacing: "0.01em" }}>
+            <button 
+              className="w-full py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-['NeueHaasGroteskDisplayPro']" 
+              style={{ letterSpacing: "0.01em" }}
+              onClick={openTypeform}
+            >
               Get your custom proposal
             </button>
           </div>
