@@ -71,21 +71,29 @@ export default function Calculator() {
   // Function to open TypeForm with all calculator data
   const openTypeform = async () => {
     setIsCapturingModel(true);
+    console.log('Starting to capture 3D model...');
     
     try {
       // Try to capture a screenshot of the 3D model
       let modelScreenshotUrl = null;
       if (house3DRef.current) {
+        console.log('House3D ref exists, trying to capture screenshot...');
         const dataUrl = await house3DRef.current.captureScreenshot();
+        console.log('Screenshot captured:', dataUrl ? 'Yes, length: ' + dataUrl.length : 'No');
+        
         if (dataUrl) {
           // Upload the screenshot to S3 and get a permanent URL
+          console.log('Uploading screenshot to S3...');
           modelScreenshotUrl = await uploadImageToS3(dataUrl);
+          console.log('S3 Upload result:', modelScreenshotUrl || 'Failed to upload');
           
           // Log the S3 URL in development mode
           if (isDevelopment && modelScreenshotUrl) {
             console.log('Model Screenshot uploaded to S3:', modelScreenshotUrl);
           }
         }
+      } else {
+        console.log('House3D ref does not exist');
       }
       
       // Get all data from context
@@ -137,7 +145,10 @@ export default function Calculator() {
       
       // Add model screenshot URL if available
       if (modelScreenshotUrl) {
+        console.log('Adding screenshot URL to TypeForm params:', modelScreenshotUrl);
         params['model_screenshot_url'] = modelScreenshotUrl;
+      } else {
+        console.log('No screenshot URL available to add to TypeForm');
       }
       
       // Convert params object to URL parameters
@@ -150,6 +161,7 @@ export default function Calculator() {
       
       // Get the full TypeForm URL from config
       const typeformUrl = getTypeformUrl(typeformParams);
+      console.log('Opening TypeForm URL:', typeformUrl);
       
       // Open TypeForm in a new tab
       window.open(typeformUrl, '_blank');
