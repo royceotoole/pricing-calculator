@@ -94,23 +94,50 @@ const House3D = forwardRef<House3DRef, {}>((props, ref) => {
   useImperativeHandle(ref, () => ({
     captureScreenshot: async () => {
       try {
-        if (!canvasRef.current) {
-          console.warn('Canvas not available for screenshot');
+        if (!containerRef.current) {
+          console.warn('Container not available for screenshot');
           return null;
         }
         
-        console.log('Attempting to capture screenshot from canvas', canvasRef.current);
+        console.log('Attempting to capture screenshot from container');
         
-        // Force a render cycle before capturing
-        if (containerRef.current) {
-          // Wait a moment to ensure the canvas is fully rendered
-          await new Promise(resolve => setTimeout(resolve, 100));
+        // Dynamically import html2canvas for client-side only usage
+        try {
+          // @ts-ignore - Dynamic import
+          const html2canvasModule = await import('html2canvas');
+          const html2canvas = html2canvasModule.default;
+          
+          console.log('html2canvas loaded, capturing container...');
+          
+          // Wait a moment for any rendering to complete
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+          // Use html2canvas instead of direct canvas access
+          const canvas = await html2canvas(containerRef.current, {
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#f0f0f0',
+            scale: 2, // Higher quality
+            logging: true
+          });
+          
+          console.log('Container captured to canvas');
+          const dataUrl = canvas.toDataURL('image/png');
+          console.log('Screenshot captured successfully, data URL length:', dataUrl.length);
+          return dataUrl;
+        } catch (importError) {
+          console.error('Failed to import html2canvas:', importError);
+          
+          // Fallback to direct canvas access if html2canvas fails
+          if (canvasRef.current) {
+            console.log('Falling back to direct canvas access');
+            // Create a data URL from the canvas
+            const dataUrl = canvasRef.current.toDataURL('image/png');
+            console.log('Screenshot captured via fallback, data URL length:', dataUrl.length);
+            return dataUrl;
+          }
+          return null;
         }
-        
-        // Create a data URL from the canvas
-        const dataUrl = canvasRef.current.toDataURL('image/png');
-        console.log('Screenshot captured successfully, data URL length:', dataUrl.length);
-        return dataUrl;
       } catch (error) {
         console.error('Error capturing 3D model screenshot:', error);
         return null;

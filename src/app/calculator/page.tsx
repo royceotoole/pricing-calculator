@@ -73,26 +73,35 @@ export default function Calculator() {
     setIsCapturingModel(true);
     console.log('Starting to capture 3D model...', new Date().toISOString());
     
+    // Record any errors that occur during the process
+    let processingError = null;
+    let modelScreenshotUrl = null;
+    
     try {
       // Try to capture a screenshot of the 3D model
-      let modelScreenshotUrl = null;
       if (house3DRef.current) {
         console.log('House3D ref exists, trying to capture screenshot...', house3DRef.current);
         
         try {
           const dataUrl = await house3DRef.current.captureScreenshot();
-          console.log('Screenshot captured:', dataUrl ? `Yes, length: ${dataUrl.length}` : 'No (returned null)');
+          console.log('Screenshot capture result:', dataUrl ? `Success, length: ${dataUrl.length}` : 'Failed (null)');
           
           if (dataUrl) {
             // Upload the screenshot to S3 and get a permanent URL
             console.log('Uploading screenshot to S3...');
             
-            // Use the imported uploadImageToS3 function
-            modelScreenshotUrl = await uploadImageToS3(dataUrl);
-            console.log('S3 Upload result:', modelScreenshotUrl || 'Failed to upload');
+            try {
+              // Use the imported uploadImageToS3 function
+              modelScreenshotUrl = await uploadImageToS3(dataUrl);
+              console.log('S3 Upload result:', modelScreenshotUrl || 'Failed to upload');
+            } catch (uploadError) {
+              console.error('Error during S3 upload:', uploadError);
+              processingError = uploadError;
+            }
           }
         } catch (screenshotError) {
           console.error('Error capturing screenshot:', screenshotError);
+          processingError = screenshotError;
         }
       } else {
         console.log('House3D ref does not exist');
@@ -145,6 +154,11 @@ export default function Calculator() {
         'source': 'calculator_page'
       };
       
+      // Add any error information for debugging
+      if (processingError) {
+        params['screenshot_error'] = String(processingError).substring(0, 100);
+      }
+      
       // Add model screenshot URL if available
       if (modelScreenshotUrl) {
         console.log('Adding screenshot URL to TypeForm params:', modelScreenshotUrl);
@@ -175,6 +189,7 @@ export default function Calculator() {
         'province': location,
         'total_size': totalSize.toString(),
         'source': 'calculator_page_error',
+        'error': String(error).substring(0, 100)
       }).toString();
       
       window.open(getTypeformUrl(fallbackParams), '_blank');

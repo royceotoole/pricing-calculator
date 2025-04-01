@@ -88,12 +88,22 @@ export const uploadImageToS3 = async (dataUrl: string | null): Promise<string | 
   
   console.log('uploadImageToS3 called with dataUrl length:', dataUrl.length);
   
+  if (!dataUrl.startsWith('data:image/')) {
+    console.error('Invalid data URL format - does not start with data:image/');
+    return null;
+  }
+  
   try {
-    console.log('Making fetch request to upload API endpoint...');
-    const response = await fetch('/api/upload-model-screenshot', {
+    console.log('Making fetch request to upload API endpoint...', new Date().toISOString());
+    
+    // Add a random query parameter to avoid any caching issues
+    const apiUrl = `/api/upload-model-screenshot?t=${Date.now()}`;
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
       },
       body: JSON.stringify({ dataUrl }),
     });
@@ -101,12 +111,30 @@ export const uploadImageToS3 = async (dataUrl: string | null): Promise<string | 
     console.log('Upload API response status:', response.status);
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('S3 upload API error:', errorText);
-      throw new Error(`Upload failed with status: ${response.status}, error: ${errorText}`);
+      let errorMessage = `Upload failed with status: ${response.status}`;
+      try {
+        const errorText = await response.text();
+        console.error('S3 upload API error:', errorText);
+        errorMessage += `, error: ${errorText}`;
+      } catch (textError) {
+        console.error('Could not read error response text:', textError);
+      }
+      throw new Error(errorMessage);
     }
 
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      console.error('Error parsing JSON response:', jsonError);
+      throw new Error('Invalid JSON response from upload API');
+    }
+    
+    if (!data || !data.url) {
+      console.error('Missing URL in response:', data);
+      throw new Error('Upload API did not return a valid URL');
+    }
+    
     console.log('S3 upload successful, received URL:', data.url);
     return data.url;
   } catch (error) {

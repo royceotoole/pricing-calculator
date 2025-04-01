@@ -14,24 +14,71 @@ const s3 = new S3Client({
 const BUCKET_NAME = process.env.AWS_BUCKET_NAME || 'take-place-model-screenshots';
 
 /**
+ * Directly test if we can access S3 with credentials
+ */
+async function testS3Connection() {
+  try {
+    console.log('Testing S3 connection...');
+    // Simple test file to verify connection
+    const testParams = {
+      Bucket: BUCKET_NAME,
+      Key: `test-connection-${Date.now()}.txt`,
+      Body: Buffer.from('Test S3 connection'),
+      ContentType: 'text/plain',
+      ACL: 'public-read' as const,
+    };
+    
+    await s3.send(new PutObjectCommand(testParams));
+    console.log('S3 connection test successful!');
+    return true;
+  } catch (error) {
+    console.error('S3 connection test failed:', error);
+    return false;
+  }
+}
+
+/**
  * API route to upload model screenshots to S3
  */
 export async function POST(request: NextRequest) {
-  console.log('S3 Upload API route called at', new Date().toISOString());
+  const now = new Date().toISOString();
+  console.log('S3 Upload API route called at', now);
   console.log('Using bucket:', BUCKET_NAME);
   console.log('Using region:', process.env.AWS_REGION || 'us-east-2');
   console.log('Access key ID exists:', !!process.env.AWS_ACCESS_KEY_ID);
   console.log('Secret access key exists:', !!process.env.AWS_SECRET_ACCESS_KEY);
   
+  // Test S3 connection first to catch credential issues early
+  const connectionTestResult = await testS3Connection();
+  if (!connectionTestResult) {
+    console.error('Failed to connect to S3 bucket with provided credentials');
+    return NextResponse.json(
+      { error: "S3 connection test failed - check credentials and bucket permissions" },
+      { status: 500 }
+    );
+  }
+  
   try {
     // Parse the request data
     let data;
     try {
-      data = await request.json();
+      const textBody = await request.text();
+      console.log('Request body received, length:', textBody.length);
+      
+      try {
+        data = JSON.parse(textBody);
+      } catch (jsonError) {
+        console.error('Error parsing JSON:', jsonError);
+        console.log('First 100 characters of body:', textBody.substring(0, 100));
+        return NextResponse.json(
+          { error: "Invalid JSON in request body" },
+          { status: 400 }
+        );
+      }
     } catch (parseError) {
-      console.error('Error parsing request JSON:', parseError);
+      console.error('Error reading request body:', parseError);
       return NextResponse.json(
-        { error: "Invalid JSON in request body" },
+        { error: "Could not read request body" },
         { status: 400 }
       );
     }
@@ -50,17 +97,33 @@ export async function POST(request: NextRequest) {
     
     // Extract the binary data from the data URL
     try {
+      if (!dataUrl.startsWith('data:image/')) {
+        console.error('Error: Invalid data URL format - not an image');
+        return NextResponse.json(
+          { error: "Invalid data URL format - not an image" },
+          { status: 400 }
+        );
+      }
+      
       const base64Data = dataUrl.split(',')[1];
       if (!base64Data) {
         console.error('Error: Invalid data URL format - missing base64 data');
         return NextResponse.json(
-          { error: "Invalid data URL format" },
+          { error: "Invalid data URL format - missing base64 data" },
           { status: 400 }
         );
       }
       
       const buffer = Buffer.from(base64Data, 'base64');
       console.log('Converted to buffer, size:', buffer.length);
+      
+      if (buffer.length === 0) {
+        console.error('Error: Empty buffer after base64 conversion');
+        return NextResponse.json(
+          { error: "Empty buffer after base64 conversion" },
+          { status: 400 }
+        );
+      }
       
       // Extract the MIME type
       const mimeMatch = dataUrl.match(/data:([^;]+);/);
