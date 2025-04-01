@@ -95,6 +95,8 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
           width: 'calc(100vw - 48px)',  // Full width minus margins
           maxWidth: '320px',            // Max width for larger phones
           zIndex: 100,
+          borderRadius: '8px',          // Match this with the inner element
+          overflow: 'hidden',           // Ensure background doesn't extend beyond corners
           boxShadow: '0 0 0 5000px rgba(0,0,0,0.5)' // Dim the background
         };
         
@@ -184,7 +186,10 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
               </button>
             )}
             
-            {content}
+            {/* Add padding container to prevent text from overlapping with close icon */}
+            <div className={isMobileView ? "pt-6" : ""}>
+              {content}
+            </div>
             
             {!isMobileView && (
               <div 
