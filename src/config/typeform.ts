@@ -39,8 +39,8 @@
  * 
  * Additional Cost Fields (final calculated values):
  * - foundation_estimate: Foundation cost
- * - appliances_estimate_min: Minimum appliance cost
- * - appliances_estimate_max: Maximum appliance cost
+ * - appliances_estimate_min: Always 0 (standard appliances included in base price)
+ * - appliances_estimate_max: Cost for premium appliance upgrades (up to $12,000)
  * - delivery_estimate: Delivery cost
  * - electrical_hookup_estimate: Electrical hookup cost
  * - sewer_water_septic_min: Minimum sewer/water/septic cost

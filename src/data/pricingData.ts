@@ -26,9 +26,11 @@ export const PRICING_CONSTANTS = {
   },
 
   // Appliance package range
+  // Base appliances (Fisher & Paykel) are included in the base price
+  // MAX represents potential upgrades to premium appliance packages
   APPLIANCES: {
-    MIN: 12000,
-    MAX: 25000
+    MIN: 0,      // Included in base price
+    MAX: 12000   // For premium upgrades
   },
 
   // Delivery costs
