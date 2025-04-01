@@ -99,8 +99,17 @@ const House3D = forwardRef<House3DRef, {}>((props, ref) => {
           return null;
         }
         
+        console.log('Attempting to capture screenshot from canvas', canvasRef.current);
+        
+        // Force a render cycle before capturing
+        if (containerRef.current) {
+          // Wait a moment to ensure the canvas is fully rendered
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
         // Create a data URL from the canvas
         const dataUrl = canvasRef.current.toDataURL('image/png');
+        console.log('Screenshot captured successfully, data URL length:', dataUrl.length);
         return dataUrl;
       } catch (error) {
         console.error('Error capturing 3D model screenshot:', error);

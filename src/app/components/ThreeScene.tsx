@@ -60,9 +60,16 @@ function CanvasRefHelper({ onCanvasRef }: { onCanvasRef?: (canvas: HTMLCanvasEle
   
   useEffect(() => {
     if (onCanvasRef && gl.domElement) {
+      console.log('Canvas reference captured for screenshots');
       onCanvasRef(gl.domElement);
+    } else {
+      console.warn('Could not capture canvas reference:', { 
+        glExists: !!gl,
+        domElementExists: gl && !!gl.domElement,
+        onCanvasRefExists: !!onCanvasRef
+      });
     }
-  }, [gl.domElement, onCanvasRef]);
+  }, [gl, gl.domElement, onCanvasRef]);
   
   return null;
 }

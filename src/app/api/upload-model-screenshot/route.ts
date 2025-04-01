@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid';
 
 // S3 client configuration
 const s3 = new S3Client({
-  region: process.env.AWS_REGION || 'us-east-1',
+  region: process.env.AWS_REGION || 'us-east-2',
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log('S3 Upload API route called');
     console.log('Using bucket:', BUCKET_NAME);
-    console.log('Using region:', process.env.AWS_REGION || 'us-east-1');
+    console.log('Using region:', process.env.AWS_REGION || 'us-east-2');
     console.log('Access key ID exists:', !!process.env.AWS_ACCESS_KEY_ID);
     console.log('Secret access key exists:', !!process.env.AWS_SECRET_ACCESS_KEY);
     
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     console.log('Successfully uploaded to S3');
     
     // Generate the public URL
-    const fileUrl = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION || 'us-east-2'}.amazonaws.com/${fileName}`;
+    const fileUrl = `https://${BUCKET_NAME}.s3.us-east-2.amazonaws.com/${fileName}`;
     console.log('Generated URL:', fileUrl);
     
     return NextResponse.json({ url: fileUrl });
