@@ -59,7 +59,7 @@
  */
 
 // TypeForm ID for the custom proposal form
-export const TYPEFORM_ID = 'XXXXX'; // Replace with your actual TypeForm ID
+export const TYPEFORM_ID = 'lwti2ikW'; // Your actual TypeForm ID
 
 // Base URL for TypeForm
 export const TYPEFORM_BASE_URL = 'https://form.typeform.com/to';
