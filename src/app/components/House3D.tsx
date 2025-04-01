@@ -100,13 +100,81 @@ const House3D = forwardRef<House3DRef, {}>((props, ref) => {
           return null;
         }
         
-        console.log('Capturing direct screenshot from WebGL canvas');
+        console.log('Preparing to capture screenshot from WebGL canvas');
         
         try {
+          // Force a complete render cycle first
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
+          // Get the WebGL renderer from the canvas
+          const gl = canvasRef.current.getContext('webgl') || canvasRef.current.getContext('webgl2');
+          if (!gl) {
+            console.error('No WebGL context available on canvas');
+          } else {
+            // Force the WebGL context to finish any pending commands
+            gl.finish();
+          }
+          
+          console.log('Rendering complete, capturing screenshot now');
+          
           // Direct access to the WebGL canvas is the most reliable way to get JUST the 3D model
           // without any UI elements, legends, or labels
           const dataUrl = canvasRef.current.toDataURL('image/png');
           console.log('Direct WebGL canvas screenshot captured, data URL length:', dataUrl.length);
+          
+          // Verify the image isn't empty by checking the length and content
+          if (dataUrl.length < 5000) {
+            console.warn('Screenshot may be empty or contain minimal data (length:', dataUrl.length, ')');
+            
+            // Try using preserveDrawingBuffer option
+            console.log('Falling back to alternate capture method');
+            
+            // Get the scene through the parent of the canvas (ThreeScene div)
+            const sceneContainer = canvasRef.current.parentElement;
+            if (!sceneContainer) {
+              console.warn('Cannot find scene container');
+              return dataUrl; // Return what we have, even if it might be empty
+            }
+            
+            // Prepare for html2canvas capture
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
+            try {
+              // @ts-ignore - Dynamic import
+              const html2canvasModule = await import('html2canvas');
+              const html2canvas = html2canvasModule.default;
+              
+              // Use html2canvas with special options for WebGL
+              const canvas = await html2canvas(sceneContainer, {
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: null, // Transparent background
+                scale: 2, // Higher quality
+                logging: true,
+                ignoreElements: (element) => {
+                  // Only include the canvas and 3D model, ignore text/legend elements
+                  if (element.classList && 
+                     (element.classList.contains('legend') || 
+                      element.textContent === 'CONFIGURATION' ||
+                      element.textContent?.includes('FLOOR AREA') ||
+                      element.textContent?.includes('OPEN TO BELOW'))) {
+                    return true;
+                  }
+                  return false;
+                }
+              });
+              
+              const alternateDataUrl = canvas.toDataURL('image/png');
+              console.log('html2canvas screenshot captured, data URL length:', alternateDataUrl.length);
+              
+              // Return the better image (the one with more data)
+              return alternateDataUrl.length > dataUrl.length ? alternateDataUrl : dataUrl;
+            } catch (html2canvasError) {
+              console.error('html2canvas fallback failed:', html2canvasError);
+              return dataUrl; // Return original even if it might be empty
+            }
+          }
+          
           return dataUrl;
         } catch (canvasError) {
           console.error('Error capturing from direct canvas:', canvasError);
@@ -130,18 +198,35 @@ const House3D = forwardRef<House3DRef, {}>((props, ref) => {
               return null;
             }
             
-            console.log('Found canvas element for html2canvas fallback:', canvasElement);
+            console.log('Found canvas element for html2canvas fallback');
             
-            // Wait a moment for any rendering to complete
-            await new Promise(resolve => setTimeout(resolve, 200));
+            // Wait longer for any rendering to complete
+            await new Promise(resolve => setTimeout(resolve, 500));
             
-            // Use html2canvas to capture just the canvas element
-            const canvas = await html2canvas(canvasElement, {
+            // Try to capture the scene container rather than just the canvas
+            const sceneContainer = canvasElement.parentElement;
+            if (!sceneContainer) {
+              console.warn('Cannot find scene container, falling back to canvas element');
+            }
+            
+            // Use html2canvas to capture the scene with the model
+            const canvas = await html2canvas(sceneContainer || canvasElement, {
               useCORS: true,
               allowTaint: true,
-              backgroundColor: 'transparent',
+              backgroundColor: null, // Transparent
               scale: 2, // Higher quality
-              logging: true
+              logging: true,
+              ignoreElements: (element) => {
+                // Only include the canvas and 3D model, ignore text/legend elements
+                if (element.classList && 
+                   (element.classList.contains('legend') || 
+                    element.textContent === 'CONFIGURATION' ||
+                    element.textContent?.includes('FLOOR AREA') ||
+                    element.textContent?.includes('OPEN TO BELOW'))) {
+                  return true;
+                }
+                return false;
+              }
             });
             
             console.log('Canvas captured to image via html2canvas');

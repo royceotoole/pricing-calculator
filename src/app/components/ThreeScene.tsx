@@ -804,7 +804,9 @@ export default function ThreeScene({ totalSize, secondStorySize, onCanvasRef }: 
           depth: true,
           stencil: false,
           // Disable WebXR to avoid AR button on mobile
-          xrCompatible: false
+          xrCompatible: false,
+          // Enable drawing buffer preservation for screenshots
+          preserveDrawingBuffer: true
         }}
         onError={handleError}
         onCreated={handleCreated}
@@ -871,25 +873,28 @@ export default function ThreeScene({ totalSize, secondStorySize, onCanvasRef }: 
 
       {/* Legend in bottom left corner - adjusting position to ensure proper spacing */}
       {isLoaded && (
-        <div style={{
-          position: 'absolute',
-          bottom: '10px',
-          left: '10px',
-          padding: '12px 15px',
-          backgroundColor: 'rgba(255,255,255,0.1)',
-          borderRadius: '6px',
-          fontSize: '14px',
-          fontFamily: '"Suisse Intl Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-          fontWeight: '500',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-          zIndex: 10,
-          userSelect: 'none',
-          pointerEvents: 'none', // Don't interfere with touch events
-          maxWidth: '90%', // Prevent overflow on small screens
-          margin: 0 // Remove any default margin
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
+        <div 
+          className="legend-container"
+          style={{
+            position: 'absolute',
+            bottom: '10px',
+            left: '10px',
+            padding: '12px 15px',
+            backgroundColor: 'rgba(255,255,255,0.1)',
+            borderRadius: '6px',
+            fontSize: '14px',
+            fontFamily: '"Suisse Intl Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+            fontWeight: '500',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            zIndex: 10,
+            userSelect: 'none',
+            pointerEvents: 'none', // Don't interfere with touch events
+            maxWidth: '90%', // Prevent overflow on small screens
+            margin: 0 // Remove any default margin
+          }}
+        >
+          <div className="legend" style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
             <div style={{ 
               width: '16.8px', 
               height: '16.8px', 
@@ -901,7 +906,7 @@ export default function ThreeScene({ totalSize, secondStorySize, onCanvasRef }: 
             <span style={{ opacity: 0.5 }}>FLOOR AREA</span>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div className="legend" style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ 
               width: '16.8px', 
               height: '16.8px',
@@ -923,22 +928,25 @@ export default function ThreeScene({ totalSize, secondStorySize, onCanvasRef }: 
 
       {/* Configuration text in top left corner */}
       {isLoaded && (
-        <div style={{
-          position: 'absolute',
-          top: '10px',
-          left: '10px',
-          padding: '12px 15px',
-          fontSize: '14px',
-          fontFamily: '"Suisse Intl Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-          fontWeight: '500',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-          zIndex: 10,
-          userSelect: 'none',
-          opacity: 0.5,
-          pointerEvents: 'none', // Don't interfere with touch events
-          margin: 0 // Remove any default margin
-        }}>
+        <div 
+          className="configuration-label"
+          style={{
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            padding: '12px 15px',
+            fontSize: '14px',
+            fontFamily: '"Suisse Intl Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+            fontWeight: '500',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            zIndex: 10,
+            userSelect: 'none',
+            opacity: 0.5,
+            pointerEvents: 'none', // Don't interfere with touch events
+            margin: 0 // Remove any default margin
+          }}
+        >
           CONFIGURATION
         </div>
       )}
