@@ -250,7 +250,7 @@ export default function Calculator() {
         {/* Floor Area Type Toggle */}
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <span className="text-gray-600 mr-2">Floor area calculation</span>
+            <span className="mr-2">Floor area calculation</span>
             <InfoIcon
               position="center"
               content={
