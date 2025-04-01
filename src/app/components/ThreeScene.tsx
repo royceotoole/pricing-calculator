@@ -60,7 +60,16 @@ function CanvasRefHelper({ onCanvasRef }: { onCanvasRef?: (canvas: HTMLCanvasEle
   
   useEffect(() => {
     if (onCanvasRef && gl.domElement) {
-      console.log('Canvas reference captured for screenshots');
+      console.log('Canvas reference captured for screenshots', {
+        width: gl.domElement.width,
+        height: gl.domElement.height,
+        hasContext: !!gl.domElement.getContext('webgl') || !!gl.domElement.getContext('webgl2')
+      });
+      
+      // Add an attribute to make the canvas easier to find
+      gl.domElement.setAttribute('data-screenshot-target', 'true');
+      
+      // Pass the canvas to the parent component
       onCanvasRef(gl.domElement);
     } else {
       console.warn('Could not capture canvas reference:', { 

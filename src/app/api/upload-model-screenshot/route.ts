@@ -105,6 +105,10 @@ export async function POST(request: NextRequest) {
         );
       }
       
+      // Inspect image data
+      console.log('Data URL type:', dataUrl.substring(0, 30) + '...');
+      console.log('Is PNG with transparency:', dataUrl.startsWith('data:image/png'));
+      
       const base64Data = dataUrl.split(',')[1];
       if (!base64Data) {
         console.error('Error: Invalid data URL format - missing base64 data');
