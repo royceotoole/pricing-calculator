@@ -71,26 +71,28 @@ export default function Calculator() {
   // Function to open TypeForm with all calculator data
   const openTypeform = async () => {
     setIsCapturingModel(true);
-    console.log('Starting to capture 3D model...');
+    console.log('Starting to capture 3D model...', new Date().toISOString());
     
     try {
       // Try to capture a screenshot of the 3D model
       let modelScreenshotUrl = null;
       if (house3DRef.current) {
-        console.log('House3D ref exists, trying to capture screenshot...');
-        const dataUrl = await house3DRef.current.captureScreenshot();
-        console.log('Screenshot captured:', dataUrl ? 'Yes, length: ' + dataUrl.length : 'No');
+        console.log('House3D ref exists, trying to capture screenshot...', house3DRef.current);
         
-        if (dataUrl) {
-          // Upload the screenshot to S3 and get a permanent URL
-          console.log('Uploading screenshot to S3...');
-          modelScreenshotUrl = await uploadImageToS3(dataUrl);
-          console.log('S3 Upload result:', modelScreenshotUrl || 'Failed to upload');
+        try {
+          const dataUrl = await house3DRef.current.captureScreenshot();
+          console.log('Screenshot captured:', dataUrl ? `Yes, length: ${dataUrl.length}` : 'No (returned null)');
           
-          // Log the S3 URL in development mode
-          if (isDevelopment && modelScreenshotUrl) {
-            console.log('Model Screenshot uploaded to S3:', modelScreenshotUrl);
+          if (dataUrl) {
+            // Upload the screenshot to S3 and get a permanent URL
+            console.log('Uploading screenshot to S3...');
+            
+            // Use the imported uploadImageToS3 function
+            modelScreenshotUrl = await uploadImageToS3(dataUrl);
+            console.log('S3 Upload result:', modelScreenshotUrl || 'Failed to upload');
           }
+        } catch (screenshotError) {
+          console.error('Error capturing screenshot:', screenshotError);
         }
       } else {
         console.log('House3D ref does not exist');

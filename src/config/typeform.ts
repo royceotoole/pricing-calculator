@@ -81,9 +81,15 @@ export const isDevelopment = process.env.NODE_ENV === 'development';
  * This returns a permanent URL that can be accessed anywhere
  */
 export const uploadImageToS3 = async (dataUrl: string | null): Promise<string | null> => {
-  if (!dataUrl) return null;
+  if (!dataUrl) {
+    console.log('No dataUrl provided to uploadImageToS3');
+    return null;
+  }
+  
+  console.log('uploadImageToS3 called with dataUrl length:', dataUrl.length);
   
   try {
+    console.log('Making fetch request to upload API endpoint...');
     const response = await fetch('/api/upload-model-screenshot', {
       method: 'POST',
       headers: {
@@ -92,11 +98,16 @@ export const uploadImageToS3 = async (dataUrl: string | null): Promise<string | 
       body: JSON.stringify({ dataUrl }),
     });
 
+    console.log('Upload API response status:', response.status);
+    
     if (!response.ok) {
-      throw new Error(`Upload failed with status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('S3 upload API error:', errorText);
+      throw new Error(`Upload failed with status: ${response.status}, error: ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('S3 upload successful, received URL:', data.url);
     return data.url;
   } catch (error) {
     console.error('Error uploading image to S3:', error);
