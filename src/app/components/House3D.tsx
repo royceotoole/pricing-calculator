@@ -44,11 +44,48 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
 
 export default function House3D() {
   const { totalSize, secondStorySize } = useCalculator()
-
+  const [dimensions, setDimensions] = React.useState({ width: 0, height: 0 });
+  
+  // Track container dimensions for responsive sizing
+  React.useEffect(() => {
+    const updateDimensions = () => {
+      const width = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      // More compact sizing for mobile devices
+      const isMobile = width < 768;
+      
+      // For mobile: 40% of viewport height to reduce bottom space
+      // For desktop: maintain aspect ratio but cap at 500px
+      const height = isMobile 
+        ? Math.min(viewportHeight * 0.4, 320) 
+        : Math.min(500, width * 0.7);
+        
+      setDimensions({ width, height });
+    };
+    
+    // Initial size
+    updateDimensions();
+    
+    // Update on resize
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+  
   return (
     <ErrorBoundary>
-      {/* Square container with aspect ratio 1:1 */}
-      <div className="w-full aspect-square max-h-[500px] relative">
+      {/* Tighter container with less empty space */}
+      <div 
+        className="w-full relative"
+        style={{ 
+          height: dimensions.height,
+          maxHeight: '500px',
+          overflow: 'hidden',
+          borderRadius: '8px',
+          margin: '0 auto',
+          marginBottom: '1rem' // Ensure consistent bottom margin
+        }}
+      >
         <ThreeScene totalSize={totalSize} secondStorySize={secondStorySize} />
       </div>
     </ErrorBoundary>

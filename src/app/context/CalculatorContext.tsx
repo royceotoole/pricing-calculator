@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { ProvinceCode, calculatePrice } from '../../data/pricingData'
+import { ProvinceCode, calculatePrice, calculateDetailedPrice, DetailedPriceBreakdown } from '../../data/pricingData'
 
 interface CalculatorContextType {
   location: ProvinceCode
@@ -10,25 +10,50 @@ interface CalculatorContextType {
   mainFloorSize: number
   isEarlyAdopter: boolean
   estimatedPrice: number
+  detailedPriceBreakdown: DetailedPriceBreakdown | null
   setLocation: (location: ProvinceCode) => void
   setTotalSize: (size: number) => void
   setSecondStorySize: (size: number) => void
   setMainFloorSize: (size: number) => void
   setIsEarlyAdopter: (isEarlyAdopter: boolean) => void
+  getPriceDataForTypeForm: () => TypeFormPriceData
+}
+
+// Structure for data to be sent to TypeForm
+export interface TypeFormPriceData {
+  location: ProvinceCode
+  totalSize: number
+  secondStorySize: number
+  mainFloorSize: number
+  isEarlyAdopter: boolean
+  baseEstimate: number
+  foundationEstimate: number
+  appliancesEstimateMin: number
+  appliancesEstimateMax: number
+  deliveryEstimate: number
+  electricalHookupEstimate: number
+  sewerWaterSepticEstimateMin: number
+  sewerWaterSepticEstimateMax: number
+  permitFeesEstimate: number
+  grandTotalMin: number
+  grandTotalMax: number
+  grandTotalAverage: number
 }
 
 const CalculatorContext = createContext<CalculatorContextType | undefined>(undefined)
 
 export function CalculatorProvider({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useState<ProvinceCode>('MB')
-  // Default total size is 1,920 sq ft
-  const [totalSize, setTotalSize] = useState<number>(1920)
-  // Default second story is 960 sq ft (half of total)
-  const [secondStorySize, setSecondStorySize] = useState<number>(960)
+  // Default total size is 2,080 sq ft (20 x 104 sqft)
+  const [totalSize, setTotalSize] = useState<number>(2080)
+  // Default second story is 1,040 sq ft (half of total, 10 x 104 sqft)
+  const [secondStorySize, setSecondStorySize] = useState<number>(1040)
   // Main floor size is derived from total - second story
-  const [mainFloorSize, setMainFloorSize] = useState<number>(960)
+  const [mainFloorSize, setMainFloorSize] = useState<number>(1040)
   // Early adopter toggle
   const [isEarlyAdopter, setIsEarlyAdopter] = useState<boolean>(false)
+  // Store detailed price breakdown
+  const [detailedPriceBreakdown, setDetailedPriceBreakdown] = useState<DetailedPriceBreakdown | null>(null)
 
   // Keep mainFloorSize in sync when total or second story changes
   useEffect(() => {
@@ -38,8 +63,8 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
 
   // Adjust secondStorySize when mainFloorSize changes to maintain totalSize
   const updateMainFloorSize = (size: number) => {
-    // Ensure the value is a multiple of 96
-    const adjustedSize = Math.floor(size / 96) * 96
+    // Ensure the value is a multiple of 104
+    const adjustedSize = Math.floor(size / 104) * 104
     
     // Calculate the new second story size
     const newSecondStorySize = totalSize - adjustedSize
@@ -48,7 +73,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     const maxSecondStory = Math.floor(totalSize / 2)
     
     // Set minimum second story size
-    const minSecondStory = 288
+    const minSecondStory = 312
     
     if (newSecondStorySize <= maxSecondStory && newSecondStorySize >= minSecondStory) {
       // Update both values
@@ -67,13 +92,58 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     }
   }
 
-  // Calculate estimated price using our pricing data
-  const estimatedPrice = calculatePrice(
-    location, 
-    mainFloorSize, 
-    secondStorySize, 
-    isEarlyAdopter
-  )
+  // Update detailed price breakdown whenever relevant factors change
+  useEffect(() => {
+    const breakdown = calculateDetailedPrice(
+      location, 
+      mainFloorSize, 
+      secondStorySize, 
+      isEarlyAdopter
+    )
+    setDetailedPriceBreakdown(breakdown)
+  }, [location, mainFloorSize, secondStorySize, isEarlyAdopter])
+
+  // Calculate estimated price using our pricing data (for backwards compatibility)
+  const estimatedPrice = detailedPriceBreakdown?.totalPrice || 
+    calculatePrice(location, mainFloorSize, secondStorySize, isEarlyAdopter)
+
+  // Function to get all price data for TypeForm
+  const getPriceDataForTypeForm = (): TypeFormPriceData => {
+    if (!detailedPriceBreakdown) {
+      const breakdown = calculateDetailedPrice(
+        location, 
+        mainFloorSize, 
+        secondStorySize, 
+        isEarlyAdopter
+      )
+      setDetailedPriceBreakdown(breakdown)
+      return formatTypeFormData(breakdown)
+    }
+    return formatTypeFormData(detailedPriceBreakdown)
+  }
+
+  // Helper to format data for TypeForm
+  const formatTypeFormData = (breakdown: DetailedPriceBreakdown): TypeFormPriceData => {
+    return {
+      location,
+      totalSize,
+      secondStorySize,
+      mainFloorSize,
+      isEarlyAdopter,
+      baseEstimate: breakdown.totalPrice,
+      foundationEstimate: breakdown.additionalCosts.foundation.total,
+      appliancesEstimateMin: breakdown.additionalCosts.appliances.minCost,
+      appliancesEstimateMax: breakdown.additionalCosts.appliances.maxCost,
+      deliveryEstimate: breakdown.additionalCosts.delivery.total,
+      electricalHookupEstimate: breakdown.additionalCosts.electricalHookup,
+      sewerWaterSepticEstimateMin: breakdown.additionalCosts.sewerWaterSeptic.total.min,
+      sewerWaterSepticEstimateMax: breakdown.additionalCosts.sewerWaterSeptic.total.max,
+      permitFeesEstimate: breakdown.additionalCosts.permitFees.total,
+      grandTotalMin: breakdown.grandTotal.min,
+      grandTotalMax: breakdown.grandTotal.max,
+      grandTotalAverage: breakdown.grandTotal.average
+    }
+  }
 
   return (
     <CalculatorContext.Provider
@@ -84,11 +154,13 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
         mainFloorSize,
         isEarlyAdopter,
         estimatedPrice,
+        detailedPriceBreakdown,
         setLocation,
         setTotalSize,
         setSecondStorySize,
         setMainFloorSize: updateMainFloorSize,
         setIsEarlyAdopter,
+        getPriceDataForTypeForm
       }}
     >
       {children}

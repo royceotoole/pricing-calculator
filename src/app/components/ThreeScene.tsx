@@ -1,7 +1,7 @@
 // @ts-nocheck
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useEffect, useRef } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrthographicCamera, OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
@@ -55,10 +55,10 @@ const translucent = new THREE.MeshPhysicalMaterial({
 
 function HouseModel({ totalSize, secondStorySize }: ThreeSceneProps) {
   // Constants in feet
-  const WIDTH = 24
-  const HEIGHT = 24
-  const MODULE_LENGTH = 4
-  const MODULE_AREA = WIDTH * MODULE_LENGTH
+  const WIDTH = 26          // Adjusted to 26 feet for 104 sqft modules
+  const HEIGHT = 26         // Adjusted to maintain proportion
+  const MODULE_LENGTH = 4   // Keep 4 feet as module length
+  const MODULE_AREA = WIDTH * MODULE_LENGTH  // Now equals 104 sqft
   
   // Calculate house dimensions
   const mainFloorSize = totalSize - secondStorySize
@@ -452,80 +452,253 @@ function HouseModel({ totalSize, secondStorySize }: ThreeSceneProps) {
   )
 }
 
-// Camera controller to set up isometric view and handle mouse rotation
+// Camera controller with rotation based on mouse position when hovering
 function CameraController() {
-  const { camera, size, gl } = useThree()
-  const [rotation, setRotation] = React.useState({ x: 0.35, y: 0.785 }) // Initial rotation for perfect 45-degree isometric view
-  const domElement = gl.domElement
+  const { camera, gl } = useThree();
   
-  // Calculate the center point of the second floor plate - this will be our focus point
+  // Calculate the center point of the second floor plate
   const centerPoint = useMemo(() => {
-    // The center of the second floor is at [0, heightUnits/2, 0]
-    // Where heightUnits is defined as HEIGHT/10 and HEIGHT is 24
-    // So the y-coordinate is 24/10/2 = 1.2
-    return new THREE.Vector3(0, 24/10/2, 0)
-  }, [])
+    return new THREE.Vector3(0, 26/10/2, 0); // Center of the second floor (height is now 26)
+  }, []);
 
-  // Center the camera on the house
-  React.useEffect(() => {
-    // Set initial camera position for proper 45-degree isometric view
-    const radius = 7
-    const x = 0.785 // 45 degrees in radians
-    const y = 0.35  // Slightly elevated view angle
-    
-    camera.position.x = Math.sin(x) * Math.cos(y) * radius
-    camera.position.z = Math.cos(x) * Math.cos(y) * radius
-    camera.position.y = Math.sin(y) * radius + centerPoint.y // Offset by the center point y-coordinate
-    
-    // Make sure camera is always looking at the center of the second floor
-    camera.lookAt(centerPoint)
-    camera.updateProjectionMatrix()
-  }, [camera, centerPoint])
+  // Ensure camera initially looks at center point
+  useEffect(() => {
+    if (camera) {
+      camera.lookAt(centerPoint);
+      camera.updateProjectionMatrix();
+    }
+  }, [camera, centerPoint]);
+
+  // Reference to store mouse/touch position
+  const pointer = useRef({ x: 0, y: 0, isOver: false });
   
-  // Handle mouse movement for gentle rotation - reduced sensitivity
-  React.useEffect(() => {
-    const handleMouseMove = (event: MouseEvent) => {
-      // Calculate normalized mouse position (-1 to 1)
-      const x = (event.clientX / size.width) * 2 - 1
-      const y = (event.clientY / size.height) * 2 - 1
+  // Set up camera position and track movement
+  useEffect(() => {
+    // Adjust camera distance based on screen width
+    const getResponsiveRadius = () => {
+      if (typeof window === 'undefined') return 7;
       
-      // Gentle rotation based on mouse position - reduced sensitivity by 50%
-      // Reversed the x direction by adding negative sign
-      setRotation({
-        x: 0.35 + y * 0.05,  // Reduced vertical rotation sensitivity
-        y: 0.785 - x * 0.15  // Reversed horizontal rotation direction
-      })
+      const width = window.innerWidth;
+      // Use a larger radius (camera further away) for mobile
+      if (width < 480) return 8.5; // Extra small devices
+      if (width < 768) return 8;   // Small devices
+      if (width < 1024) return 7.5; // Medium devices
+      return 7; // Desktop default
+    };
+    
+    // Base 45-degree isometric view settings
+    const radius = getResponsiveRadius();
+    const baseX = 0.785; // 45 degrees in radians (45°)
+    const baseY = 0.35;  // Slight elevation (20°)
+    
+    // Set initial camera position
+    if (camera) {
+      camera.position.x = Math.sin(baseX) * Math.cos(baseY) * radius;
+      camera.position.z = Math.cos(baseX) * Math.cos(baseY) * radius;
+      camera.position.y = Math.sin(baseY) * radius + centerPoint.y;
+      
+      camera.lookAt(centerPoint);
+      camera.updateProjectionMatrix();
     }
     
-    // Add mouse move listener to the canvas
-    domElement.addEventListener('mousemove', handleMouseMove)
+    // Mouse movement handler
+    const handleMouseMove = (e) => {
+      // Track mouse position relative to canvas
+      const rect = gl.domElement.getBoundingClientRect();
+      
+      // Check if mouse is over the canvas
+      if (
+        e.clientX >= rect.left && 
+        e.clientX <= rect.right && 
+        e.clientY >= rect.top && 
+        e.clientY <= rect.bottom
+      ) {
+        // Calculate normalized position (-0.5 to 0.5)
+        pointer.current.x = ((e.clientX - rect.left) / rect.width) - 0.5;
+        pointer.current.y = ((e.clientY - rect.top) / rect.height) - 0.5;
+        pointer.current.isOver = true;
+      } else {
+        // Mouse is outside
+        pointer.current.isOver = false;
+      }
+    };
     
-    // Clean up
+    // Touch handlers for mobile devices
+    const handleTouchStart = (e) => {
+      // Prevent default to avoid scrolling, but only on the canvas
+      e.preventDefault();
+      
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const rect = gl.domElement.getBoundingClientRect();
+        
+        // Always enable rotation on touch start - mobile users expect to rotate when touching
+        pointer.current.isOver = true;
+        
+        // Calculate normalized position (-0.5 to 0.5)
+        pointer.current.x = ((touch.clientX - rect.left) / rect.width) - 0.5;
+        pointer.current.y = ((touch.clientY - rect.top) / rect.height) - 0.5;
+      }
+    };
+    
+    const handleTouchMove = (e) => {
+      // Always prevent default for touch move to avoid scrolling when interacting with model
+      e.preventDefault();
+      
+      if (e.touches.length === 1 && pointer.current.isOver) {
+        const touch = e.touches[0];
+        const rect = gl.domElement.getBoundingClientRect();
+        
+        // Calculate normalized position (-0.5 to 0.5)
+        pointer.current.x = ((touch.clientX - rect.left) / rect.width) - 0.5;
+        pointer.current.y = ((touch.clientY - rect.top) / rect.height) - 0.5;
+      }
+    };
+    
+    const handleTouchEnd = (e) => {
+      // Reset rotation to default position gradually when touch ends
+      // Add a small delay before disabling rotation to make animation smoother
+      setTimeout(() => {
+        pointer.current.isOver = false;
+      }, 50);
+    };
+    
+    // Add event listeners
+    window.addEventListener('mousemove', handleMouseMove);
+    gl.domElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+    gl.domElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+    gl.domElement.addEventListener('touchend', handleTouchEnd);
+    gl.domElement.addEventListener('touchcancel', handleTouchEnd);
+    
+    // Animation loop for camera movement
+    const animate = () => {
+      const animationId = requestAnimationFrame(animate);
+      
+      if (pointer.current.isOver && camera) {
+        // Calculate new camera position with gentle rotation
+        // Different rotation ranges for horizontal vs vertical movement
+        const horizontalRotationRange = 0.45; // Much larger horizontal range (±25°)
+        const verticalRotationRange = 0.26; // Keep vertical range the same (±15°)
+        
+        // Apply pointer position to adjust base angles
+        // Reverse the x direction and apply stronger horizontal effect
+        const x = baseX + (-pointer.current.x * horizontalRotationRange);
+        const y = baseY + (pointer.current.y * verticalRotationRange);
+        
+        // Update camera position for a smooth orbit around centerPoint
+        const newX = Math.sin(x) * Math.cos(y) * radius;
+        const newZ = Math.cos(x) * Math.cos(y) * radius;
+        const newY = Math.sin(y) * radius + centerPoint.y;
+        
+        // Increase interpolation speed for more responsive movement
+        const horizontalSpeed = 0.09; // Faster horizontal response
+        const verticalSpeed = 0.07;   // Keep vertical speed the same
+        
+        // Apply different speeds to different axes
+        camera.position.x += (newX - camera.position.x) * horizontalSpeed;
+        camera.position.z += (newZ - camera.position.z) * horizontalSpeed;
+        camera.position.y += (newY - camera.position.y) * verticalSpeed;
+        
+        // Keep camera looking at center point
+        camera.lookAt(centerPoint);
+        camera.updateProjectionMatrix();
+      }
+      
+      return animationId;
+    };
+    
+    // Start animation loop
+    const animationId = animate();
+    
+    // Cleanup event listeners and animation on unmount
     return () => {
-      domElement.removeEventListener('mousemove', handleMouseMove)
-    }
-  }, [domElement, size])
+      window.removeEventListener('mousemove', handleMouseMove);
+      gl.domElement.removeEventListener('touchstart', handleTouchStart);
+      gl.domElement.removeEventListener('touchmove', handleTouchMove);
+      gl.domElement.removeEventListener('touchend', handleTouchEnd);
+      gl.domElement.removeEventListener('touchcancel', handleTouchEnd);
+      cancelAnimationFrame(animationId);
+    };
+  }, [camera, centerPoint, gl]);
   
-  // Apply the rotation on each frame
-  React.useEffect(() => {
-    const radius = 7
-    
-    // Convert rotation to camera position on a sphere around the center point of the second floor
-    camera.position.x = centerPoint.x + Math.sin(rotation.y) * Math.cos(rotation.x) * radius
-    camera.position.z = centerPoint.z + Math.cos(rotation.y) * Math.cos(rotation.x) * radius
-    camera.position.y = centerPoint.y + Math.sin(rotation.x) * radius
-    
-    // Always look at the center point of the second floor
-    camera.lookAt(centerPoint)
-  }, [camera, rotation, centerPoint])
-  
-  return null
+  return null;
 }
+
+// Helper function to safely get device pixel ratio
+const getDevicePixelRatio = () => {
+  if (typeof window !== 'undefined') {
+    return window.devicePixelRatio > 2 ? 2 : window.devicePixelRatio;
+  }
+  return 1;
+};
+
+// Helper to get responsive zoom level based on screen width
+const getResponsiveZoom = () => {
+  if (typeof window === 'undefined') return 48; // Default zoom for SSR
+  
+  const width = window.innerWidth;
+  
+  // Further reduced zoom values for more compact container
+  if (width < 480) return 24; // Extra small devices - much further away
+  if (width < 768) return 28; // Small devices - further away
+  if (width < 1024) return 36; // Medium devices
+  return 48; // Desktop default zoom
+};
+
+// Check WebGL support
+const checkWebGLSupport = () => {
+  if (typeof window === 'undefined') return { supported: false, error: 'SSR' };
+  
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    
+    if (!gl) {
+      return { 
+        supported: false, 
+        error: 'WebGL not supported' 
+      };
+    }
+    
+    return { 
+      supported: true,
+      renderer: gl.getParameter(gl.RENDERER),
+      vendor: gl.getParameter(gl.VENDOR)
+    };
+  } catch (e) {
+    return { 
+      supported: false, 
+      error: e.message 
+    };
+  }
+};
 
 export default function ThreeScene({ totalSize, secondStorySize }: ThreeSceneProps) {
   // Add error handling for the Canvas component
   const [renderError, setRenderError] = React.useState<Error | null>(null);
   const [isLoaded, setIsLoaded] = React.useState(false);
+  const [webGLInfo, setWebGLInfo] = React.useState({ checked: false, info: null });
+  const [zoom, setZoom] = React.useState(getResponsiveZoom());
+  
+  // Update zoom level on window resize
+  React.useEffect(() => {
+    const handleResize = () => {
+      setZoom(getResponsiveZoom());
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  // Check WebGL support on client-side
+  React.useEffect(() => {
+    const info = checkWebGLSupport();
+    setWebGLInfo({ checked: true, info });
+    console.log('WebGL support:', info);
+  }, []);
+  
+  // Device pixel ratio for responsive rendering
+  const dpr = getDevicePixelRatio();
   
   // Handle errors in the 3D renderer
   const handleError = (error: Error) => {
@@ -556,7 +729,13 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
       }}>
         <h3>Unable to load 3D viewer</h3>
         <p>There was an error initializing the 3D model: {renderError.message}</p>
-        <p>Try refreshing the page or check your browser compatibility.</p>
+        {webGLInfo.checked && !webGLInfo.info?.supported && (
+          <div style={{ marginTop: '10px', color: '#ff0000' }}>
+            <p>WebGL is not supported by your device</p>
+            <p>Error: {webGLInfo.info?.error}</p>
+          </div>
+        )}
+        <p>Try using a different browser or device with better WebGL support.</p>
       </div>
     );
   }
@@ -587,7 +766,10 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
       left: 0,
       right: 0,
       bottom: 0,
-      overflow: 'hidden'
+      overflow: 'hidden',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center', // Center vertically
     }}>
       {/* Remove Suspense and handle loading state differently */}
       <Canvas 
@@ -595,26 +777,37 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
         gl={{ 
           antialias: true, 
           alpha: true,
-          powerPreference: 'default',
+          powerPreference: "high-performance",
           depth: true,
-          stencil: false
+          stencil: false,
+          // Disable WebXR to avoid AR button on mobile
+          xrCompatible: false
         }}
         onError={handleError}
         onCreated={handleCreated}
         style={{ 
           width: '100%', 
           height: '100%',
-          display: 'block' 
+          display: 'block',
+          touchAction: 'none' // Disable browser touch actions
         }}
-        dpr={[1, 2]} // Responsive pixel ratio
-        camera={{ position: [5, 5, 5], fov: 45, near: 0.1, far: 1000, zoom: 48 }}
+        dpr={dpr}
+        camera={{ 
+          position: [5, 5, 5], 
+          fov: 45, 
+          near: 0.1, 
+          far: 1000, 
+          zoom: zoom,
+          up: [0, 1, 0] // Ensure consistent up vector
+        }}
         fallback={loadingFallback}
+        raycaster={{ params: { Line: { threshold: 0.15 }, Points: { threshold: 0.15 } } }}
       >
         <CameraController />
         <OrthographicCamera 
           makeDefault
           position={[5, 5, 5]}
-          zoom={48}
+          zoom={zoom}
           near={0.1}
           far={1000}
         />
@@ -622,20 +815,25 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
         <pointLight position={[10, 10, 10]} intensity={0.8} />
         <directionalLight position={[5, 10, 5]} intensity={0.8} castShadow />
         
-        <HouseModel totalSize={totalSize} secondStorySize={secondStorySize} />
+        {/* Adjust the position for vertical centering - slightly shifted up for better fit */}
+        <group position={[0, -0.3, 0]}>
+          <HouseModel totalSize={totalSize} secondStorySize={secondStorySize} />
+        </group>
       </Canvas>
       
       {!isLoaded && (
         <div style={{
           position: 'absolute',
-          bottom: 0,
+          bottom: '50%',
           left: 0,
           right: 0,
           padding: '8px 10px',
           backgroundColor: 'rgba(0,0,0,0.6)',
           color: 'white',
           fontSize: '13px',
-          textAlign: 'center'
+          textAlign: 'center',
+          transform: 'translateY(50%)', // Center vertically
+          zIndex: 20
         }}>
           Initializing 3D viewer...
         </div>
@@ -650,20 +848,22 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
           padding: '12px 15px',
           backgroundColor: 'rgba(255,255,255,0.1)',
           borderRadius: '6px',
-          fontSize: '14px',
+          fontSize: '14px', // Reverting to original size
           fontFamily: '"Suisse Intl Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace',
           fontWeight: '500',
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
-          zIndex: 1,
-          userSelect: 'none'
+          zIndex: 10, // Ensure it's above everything else
+          userSelect: 'none',
+          pointerEvents: 'none', // Don't interfere with touch events
+          maxWidth: '90%' // Prevent overflow on small screens
         }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
             <div style={{ 
               width: '16.8px', 
               height: '16.8px', 
-              backgroundColor: 'rgba(0,0,0,0.75)', // Reduced by 15% from 0.9
-              border: '0.5px solid rgba(255,255,255,0.8)', // Thin white outline
+              backgroundColor: 'rgba(0,0,0,0.75)',
+              border: '0.5px solid rgba(255,255,255,0.8)',
               marginRight: '10px' 
             }}></div>
             <span style={{ opacity: 0.5 }}>FLOOR AREA</span>
@@ -673,7 +873,7 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
             <div style={{ 
               width: '16.8px', 
               height: '16.8px',
-              backgroundColor: 'rgba(255,255,255,0.2)', // Reduced by 50% from 0.4
+              backgroundColor: 'rgba(255,255,255,0.2)',
               border: '1.2px dashed #000',
               borderWidth: '1.2px',
               borderStyle: 'dashed',
@@ -700,9 +900,10 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
           fontWeight: '500',
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
-          zIndex: 1,
+          zIndex: 10,
           userSelect: 'none',
-          opacity: 0.5
+          opacity: 0.5,
+          pointerEvents: 'none' // Don't interfere with touch events
         }}>
           CONFIGURATION
         </div>

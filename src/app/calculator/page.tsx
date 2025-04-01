@@ -6,6 +6,7 @@ import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { useCalculator } from '../context/CalculatorContext'
 import { PRICING_CONSTANTS, PROVINCIAL_MULTIPLIERS } from '../../data/pricingData'
+import PriceDataLogger from '../components/PriceDataLogger'
 
 // Dynamically import the House3D component with no SSR
 const House3D = dynamic(() => import('../components/House3D'), { 
@@ -80,14 +81,14 @@ export default function Calculator() {
   }, [totalSize, secondStorySize])
 
   // Ensure second story size doesn't exceed half of total size when total size changes
-  // Also ensure it doesn't go below the minimum of 288 sqft
+  // Also ensure it doesn't go below the minimum of 312 sqft
   React.useEffect(() => {
     const maxSecondStory = Math.floor(totalSize / 2)
-    const minSecondStory = 288
+    const minSecondStory = 312
     
     if (secondStorySize > maxSecondStory) {
-      // Adjust to nearest 96 sqft increment that's within the max
-      setSecondStorySize(Math.floor(maxSecondStory / 96) * 96)
+      // Adjust to nearest 104 sqft increment that's within the max
+      setSecondStorySize(Math.floor(maxSecondStory / 104) * 104)
     } else if (secondStorySize < minSecondStory) {
       // If below minimum, set to minimum
       setSecondStorySize(minSecondStory)
@@ -100,6 +101,9 @@ export default function Calculator() {
 
   return (
     <main className="min-h-screen px-8 py-8 w-full mx-auto font-['NeueHaasGroteskDisplayPro'] relative" style={{ maxWidth: "36rem" }}>
+      {/* Hidden component to log detailed price data */}
+      <PriceDataLogger />
+      
       <nav className="mb-12">
         <Link href="/" className="inline-flex items-center btn-grey py-2 px-4">
           ← back
@@ -132,9 +136,9 @@ export default function Calculator() {
           </div>
           <input
             type="range"
-            min="768"
-            max="3840"
-            step="96"
+            min="832"
+            max="4160"
+            step="104"
             value={totalSize}
             onChange={(e) => setTotalSize(Number(e.target.value))}
             className="w-full accent-black"
@@ -152,8 +156,8 @@ export default function Calculator() {
           <input
             type="range"
             min={Math.ceil(totalSize / 2)}
-            max={totalSize - 288} // Ensure at least 288 sqft remains for second floor
-            step="96"
+            max={totalSize - 312} // Ensure at least 312 sqft remains for second floor
+            step="104"
             value={mainFloorSize}
             onChange={(e) => {
               const newValue = Number(e.target.value)
@@ -196,16 +200,16 @@ export default function Calculator() {
           </div>
           <input
             type="range"
-            min="288"
+            min="312"
             max={Math.floor(totalSize / 2)}
-            step="96"
+            step="104"
             value={secondStorySize}
             onChange={(e) => {
               const newValue = Number(e.target.value)
-              // Ensure the value is a multiple of 96, at least 288, and doesn't exceed half of total size
+              // Ensure the value is a multiple of 104, at least 312, and doesn't exceed half of total size
               const maxValue = Math.floor(totalSize / 2)
-              const minValue = 288
-              const adjustedValue = Math.max(minValue, Math.min(maxValue, Math.floor(newValue / 96) * 96))
+              const minValue = 312
+              const adjustedValue = Math.max(minValue, Math.min(maxValue, Math.floor(newValue / 104) * 104))
               setSecondStorySize(adjustedValue)
             }}
             className="w-full accent-black"
