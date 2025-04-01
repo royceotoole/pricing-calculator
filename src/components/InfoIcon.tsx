@@ -107,8 +107,9 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
         newTooltipStyle = {
           bottom: '100%',
           marginBottom: '8px',
-          maxWidth: '288px', // Fixed width for consistency
-          width: '288px',
+          maxWidth: position === 'center' ? '320px' : '288px', // Wider for center position
+          width: position === 'center' ? '320px' : '288px',
+          zIndex: 100,
         };
         
         // Calculate horizontal position for desktop
@@ -174,20 +175,19 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
           ref={tooltipRef}
         >
           <div className="relative p-4 bg-black text-white rounded shadow-lg z-20">
-            {isMobileView && (
-              <button 
-                onClick={() => setIsVisible(false)}
-                className="absolute top-1 right-1 p-2 text-white opacity-70 hover:opacity-100 transition-opacity"
-                aria-label="Close tooltip"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            )}
+            {/* Show close button for all positions */}
+            <button 
+              onClick={() => setIsVisible(false)}
+              className="absolute top-1 right-1 p-2 text-white opacity-70 hover:opacity-100 transition-opacity"
+              aria-label="Close tooltip"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
             
             {/* Add padding container to prevent text from overlapping with close icon */}
-            <div className={isMobileView ? "pt-6" : ""}>
+            <div className="pt-6">
               {content}
             </div>
             

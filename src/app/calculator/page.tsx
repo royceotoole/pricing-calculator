@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import { useCalculator } from '../context/CalculatorContext'
+import { useCalculator, FloorAreaType } from '../context/CalculatorContext'
 import { PRICING_CONSTANTS, PROVINCIAL_MULTIPLIERS } from '../../data/pricingData'
 import PriceDataLogger from '../components/PriceDataLogger'
 import InfoIcon from '../../components/InfoIcon'
@@ -22,11 +22,14 @@ export default function Calculator() {
     mainFloorSize,
     location,
     isEarlyAdopter,
+    floorAreaType,
     setTotalSize,
     setSecondStorySize,
     setMainFloorSize,
     setIsEarlyAdopter,
-    estimatedPrice
+    setFloorAreaType,
+    estimatedPrice,
+    moduleSize
   } = useCalculator()
   
   // Keep mainFloorSize in sync when total or second story changes
@@ -91,9 +94,9 @@ export default function Calculator() {
           </div>
           <input
             type="range"
-            min="832"
-            max="4160"
-            step="104"
+            min={8 * moduleSize}
+            max={40 * moduleSize}
+            step={moduleSize}
             value={totalSize}
             onChange={(e) => setTotalSize(Number(e.target.value))}
             className="w-full accent-black"
@@ -111,8 +114,8 @@ export default function Calculator() {
           <input
             type="range"
             min={Math.ceil(totalSize / 2)}
-            max={totalSize - 312} // Ensure at least 312 sqft remains for second floor
-            step="104"
+            max={totalSize - (3 * moduleSize)} // Ensure at least 3 modules remain for second floor
+            step={moduleSize}
             value={mainFloorSize}
             onChange={(e) => {
               const newValue = Number(e.target.value)
@@ -148,16 +151,16 @@ export default function Calculator() {
           </div>
           <input
             type="range"
-            min="312"
+            min={3 * moduleSize}
             max={Math.floor(totalSize / 2)}
-            step="104"
+            step={moduleSize}
             value={secondStorySize}
             onChange={(e) => {
               const newValue = Number(e.target.value)
-              // Ensure the value is a multiple of 104, at least 312, and doesn't exceed half of total size
+              // Ensure the value is a multiple of the module size, at least 3 modules, and doesn't exceed half of total size
               const maxValue = Math.floor(totalSize / 2)
-              const minValue = 312
-              const adjustedValue = Math.max(minValue, Math.min(maxValue, Math.floor(newValue / 104) * 104))
+              const minValue = 3 * moduleSize
+              const adjustedValue = Math.max(minValue, Math.min(maxValue, Math.floor(newValue / moduleSize) * moduleSize))
               setSecondStorySize(adjustedValue)
             }}
             className="w-full accent-black"
@@ -252,16 +255,62 @@ export default function Calculator() {
               </div>
               <div className="text-right flex justify-end items-center">
                 <span className="mono-display-gray">${Math.round(estimatedPrice / totalSize)}/SQFT</span>
-                
-                {/* Cost per SQFT info button */}
+              </div>
+            </div>
+
+            {/* Floor Area Type Toggle */}
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center">
+                <span className="text-gray-600 mr-2">Floor area calculation</span>
                 <InfoIcon
-                  position="right"
+                  position="center"
                   content={
                     <>
-                      <p className="text-sm">Price per sqft is measured to the exterior face of the building.</p>
+                      <p className="text-sm font-bold mb-2">Floor area calculation</p>
+                      <p className="text-sm mb-2">
+                        Gross floor area is measured to the exterior face of the perimeter of the home.
+                      </p>
+                      <p className="text-sm mb-2">
+                        Net, or 'livable' floor area is measured to the interior face of the perimeter of the home.
+                      </p>
+                      <p className="text-sm mb-2">
+                        Due to our thick super-insulated walls, the net floor area of a Take Place home will be approximately 8% less than the gross floor area.
+                      </p>
+                      <p className="text-sm">
+                        You can use this toggle to see how it impacts the configuration.
+                      </p>
                     </>
                   }
                 />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <span 
+                  className={`text-sm cursor-pointer ${floorAreaType === 'gross' ? 'font-bold' : 'text-gray-500'}`}
+                  onClick={() => setFloorAreaType('gross')}
+                >
+                  Gross
+                </span>
+                
+                {/* Toggle switch */}
+                <div 
+                  className="relative w-12 h-6 bg-gray-200 rounded-full cursor-pointer"
+                  onClick={() => setFloorAreaType(floorAreaType === 'gross' ? 'net' : 'gross')}
+                >
+                  <div 
+                    className="absolute top-1 w-4 h-4 rounded-full bg-black transition-all"
+                    style={{ 
+                      left: floorAreaType === 'gross' ? '4px' : 'calc(100% - 20px)'
+                    }}
+                  />
+                </div>
+                
+                <span 
+                  className={`text-sm cursor-pointer ${floorAreaType === 'net' ? 'font-bold' : 'text-gray-500'}`}
+                  onClick={() => setFloorAreaType('net')}
+                >
+                  Net
+                </span>
               </div>
             </div>
 
