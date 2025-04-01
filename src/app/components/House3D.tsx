@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useRef, useEffect } from 'react'
 import { useCalculator } from '../context/CalculatorContext'
 import dynamic from 'next/dynamic'
 
@@ -44,47 +44,53 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
 
 export default function House3D() {
   const { totalSize, secondStorySize } = useCalculator()
-  const [dimensions, setDimensions] = React.useState({ width: 0, height: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
   
-  // Track container dimensions for responsive sizing
-  React.useEffect(() => {
-    const updateDimensions = () => {
-      const width = window.innerWidth;
-      
-      // Fixed heights that are 25% shorter than before
-      // Previously: mobile up to 500px (60% of viewport), desktop up to 500px
-      // Now: mobile 375px (fixed), desktop 375px (fixed)
-      const isMobile = width < 768;
-      
-      // Use fixed heights rather than viewport percentages to prevent content shifting
-      const height = 375; // 25% shorter than the previous 500px max
-      
-      setDimensions({ width, height });
+  // Track container dimensions for responsive sizing and maintain aspect ratio
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.clientWidth;
+        
+        // Always set height equal to width for perfect square on both mobile and desktop
+        containerRef.current.style.height = `${containerWidth}px`;
+      }
     };
     
     // Initial size
-    updateDimensions();
+    updateSize();
     
     // Update on resize
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+    window.addEventListener('resize', updateSize);
+    
+    // Create a ResizeObserver to handle container size changes
+    // This handles cases when the parent container changes size without a window resize event
+    const resizeObserver = new ResizeObserver(updateSize);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    
+    return () => {
+      window.removeEventListener('resize', updateSize);
+      if (containerRef.current) {
+        resizeObserver.unobserve(containerRef.current);
+      }
+    };
   }, []);
   
   return (
     <ErrorBoundary>
-      {/* Container with fixed dimensions */}
-      <div 
-        className="w-full relative"
-        style={{ 
-          height: dimensions.height,
-          maxHeight: '375px', // 25% shorter than previous 500px
-          overflow: 'hidden',
-          borderRadius: '8px',
-          margin: '0 auto',
-          marginBottom: '1rem' // Ensure consistent bottom margin
-        }}
-      >
-        <ThreeScene totalSize={totalSize} secondStorySize={secondStorySize} />
+      {/* Use an aspect ratio container with padding-bottom trick for responsive square */}
+      <div className="w-full relative">
+        <div 
+          ref={containerRef}
+          className="w-full relative bg-gray-100 rounded-lg overflow-hidden border border-[rgba(0,0,0,0.08)]"
+          style={{ 
+            marginBottom: '1rem' // Ensure consistent bottom margin
+          }}
+        >
+          <ThreeScene totalSize={totalSize} secondStorySize={secondStorySize} />
+        </div>
       </div>
     </ErrorBoundary>
   )

@@ -166,7 +166,7 @@ export default function Calculator() {
 
         {/* Configuration Viewer */}
         <div>
-          <div className="w-full h-[375px] bg-gray-100 rounded-lg overflow-hidden relative border border-[rgba(0,0,0,0.08)]">
+          <div className="w-full relative">
             <House3D />
           </div>
         </div>
