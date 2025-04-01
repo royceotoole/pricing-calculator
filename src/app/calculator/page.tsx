@@ -38,7 +38,6 @@ export default function Calculator() {
     displayMainFloorSize
   } = useCalculator()
   
-  const [isExpanded, setIsExpanded] = useState(false);
   const mainContentRef = useRef<HTMLDivElement>(null);
 
   // Keep mainFloorSize in sync when total or second story changes
@@ -65,39 +64,6 @@ export default function Calculator() {
       setMainFloorSize(newMainFloor)
     }
   }, [totalSize, secondStorySize, setSecondStorySize, setMainFloorSize])
-
-  // Effect to handle auto-expansion when scrolled to bottom
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!mainContentRef.current) return;
-
-      // Only apply this behavior on mobile
-      if (window.innerWidth >= 768) {
-        // On desktop, always show expanded
-        setIsExpanded(true);
-        return;
-      }
-
-      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-      const bottomThreshold = 100; // pixels from bottom
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - bottomThreshold;
-
-      if (isAtBottom) {
-        setIsExpanded(true);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    
-    // Initialize state based on device size
-    if (window.innerWidth >= 768) {
-      setIsExpanded(true);
-    }
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
 
   // Function to open TypeForm with all calculator data
   const openTypeform = () => {
@@ -190,7 +156,7 @@ export default function Calculator() {
         <div className="text-gray-600">Location: {location}</div>
       </div>
 
-      <div className="space-y-12 mb-[220px]">
+      <div className="space-y-9 mb-[150px]">
         {/* Total Size Slider */}
         <div>
           <div className="flex justify-between items-center mb-4">
@@ -281,6 +247,62 @@ export default function Calculator() {
           </div>
         </div>
 
+        {/* Floor Area Type Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <span className="text-gray-600 mr-2">Floor area calculation</span>
+            <InfoIcon
+              position="center"
+              content={
+                <>
+                  <p className="text-sm font-bold mb-2">Floor area calculation</p>
+                  <p className="text-sm mb-2">
+                    Gross floor area is measured to the exterior face of the perimeter of the home.
+                  </p>
+                  <p className="text-sm mb-2">
+                    Net, or 'livable' floor area is measured to the interior face of the perimeter of the home.
+                  </p>
+                  <p className="text-sm mb-2">
+                    Due to our thick super-insulated walls, the net floor area of a Take Place home will be approximately 8% less than the gross floor area.
+                  </p>
+                  <p className="text-sm">
+                    Toggling between these options changes the displayed square footage but does not affect the actual home configuration or price.
+                  </p>
+                </>
+              }
+            />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <span 
+              className={`text-sm cursor-pointer ${floorAreaType === 'gross' ? 'font-bold' : 'text-gray-500'}`}
+              onClick={() => setFloorAreaType('gross')}
+            >
+              Gross
+            </span>
+            
+            {/* Toggle switch */}
+            <div 
+              className="relative w-12 h-6 bg-gray-200 rounded-full cursor-pointer"
+              onClick={() => setFloorAreaType(floorAreaType === 'gross' ? 'net' : 'gross')}
+            >
+              <div 
+                className="absolute top-1 w-4 h-4 rounded-full bg-black transition-all"
+                style={{ 
+                  left: floorAreaType === 'gross' ? '4px' : 'calc(100% - 20px)'
+                }}
+              />
+            </div>
+            
+            <span 
+              className={`text-sm cursor-pointer ${floorAreaType === 'net' ? 'font-bold' : 'text-gray-500'}`}
+              onClick={() => setFloorAreaType('net')}
+            >
+              Net
+            </span>
+          </div>
+        </div>
+
         {/* Early Adopter Checkbox with Tooltip */}
         <div className="flex items-center relative">
           <div className="flex-grow flex items-center">
@@ -327,10 +349,7 @@ export default function Calculator() {
           {/* Mobile reduced padding, desktop regular padding */}
           <div className="pt-[1.4rem] pb-[1.5rem] md:py-8">
             {/* Price Display - Always visible */}
-            <div 
-              className={`${isExpanded ? 'mb-4' : 'mb-0'} cursor-pointer md:cursor-default`} 
-              onClick={() => window.innerWidth < 768 && setIsExpanded(!isExpanded)}
-            >
+            <div>
               <div className="flex justify-between items-start mb-2">
                 <div className="flex items-center">
                   <span className="text-gray-600">Base Price</span>
@@ -367,81 +386,10 @@ export default function Calculator() {
               <div className="text-right flex justify-end items-center">
                 <span className="mono-display-gray">${Math.round(estimatedPrice / displayTotalSize)}/SQFT</span>
               </div>
-              
-              {/* Expand/collapse icon for mobile only - centered */}
-              <div className="flex justify-center mt-2 md:hidden">
-                <div className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200">
-                  <svg 
-                    className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
             </div>
 
-            {/* Expandable content - Only visible when expanded or on desktop */}
-            <div className={`${isExpanded ? 'block' : 'hidden md:block'} transition-all duration-300`}>
-              {/* Floor Area Type Toggle */}
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center">
-                  <span className="text-gray-600 mr-2">Floor area calculation</span>
-                  <InfoIcon
-                    position="center"
-                    content={
-                      <>
-                        <p className="text-sm font-bold mb-2">Floor area calculation</p>
-                        <p className="text-sm mb-2">
-                          Gross floor area is measured to the exterior face of the perimeter of the home.
-                        </p>
-                        <p className="text-sm mb-2">
-                          Net, or 'livable' floor area is measured to the interior face of the perimeter of the home.
-                        </p>
-                        <p className="text-sm mb-2">
-                          Due to our thick super-insulated walls, the net floor area of a Take Place home will be approximately 8% less than the gross floor area.
-                        </p>
-                        <p className="text-sm">
-                          Toggling between these options changes the displayed square footage but does not affect the actual home configuration or price.
-                        </p>
-                      </>
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <span 
-                    className={`text-sm cursor-pointer ${floorAreaType === 'gross' ? 'font-bold' : 'text-gray-500'}`}
-                    onClick={() => setFloorAreaType('gross')}
-                  >
-                    Gross
-                  </span>
-                  
-                  {/* Toggle switch */}
-                  <div 
-                    className="relative w-12 h-6 bg-gray-200 rounded-full cursor-pointer"
-                    onClick={() => setFloorAreaType(floorAreaType === 'gross' ? 'net' : 'gross')}
-                  >
-                    <div 
-                      className="absolute top-1 w-4 h-4 rounded-full bg-black transition-all"
-                      style={{ 
-                        left: floorAreaType === 'gross' ? '4px' : 'calc(100% - 20px)'
-                      }}
-                    />
-                  </div>
-                  
-                  <span 
-                    className={`text-sm cursor-pointer ${floorAreaType === 'net' ? 'font-bold' : 'text-gray-500'}`}
-                    onClick={() => setFloorAreaType('net')}
-                  >
-                    Net
-                  </span>
-                </div>
-              </div>
-
-              {/* Book Meeting Button */}
+            {/* Book Meeting Button */}
+            <div className="mt-4">
               <button 
                 className="w-full py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-['NeueHaasGroteskDisplayPro']" 
                 style={{ letterSpacing: "0.01em" }}
