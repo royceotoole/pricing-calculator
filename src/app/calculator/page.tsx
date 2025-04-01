@@ -8,7 +8,7 @@ import { useCalculator, FloorAreaType, MODULE_SIZES } from '../context/Calculato
 import { PRICING_CONSTANTS, PROVINCIAL_MULTIPLIERS } from '../../data/pricingData'
 import PriceDataLogger from '../components/PriceDataLogger'
 import InfoIcon from '../../components/InfoIcon'
-import { getTypeformUrl, isDevelopment, dataUrlToObjectUrl } from '../../config/typeform'
+import { getTypeformUrl, isDevelopment, uploadImageToS3 } from '../../config/typeform'
 import House3D, { House3DRef } from '../components/House3D'
 
 // Dynamically import the House3D component with no SSR
@@ -78,8 +78,13 @@ export default function Calculator() {
       if (house3DRef.current) {
         const dataUrl = await house3DRef.current.captureScreenshot();
         if (dataUrl) {
-          // Convert data URL to an object URL that can be accessed by TypeForm
-          modelScreenshotUrl = dataUrlToObjectUrl(dataUrl);
+          // Upload the screenshot to S3 and get a permanent URL
+          modelScreenshotUrl = await uploadImageToS3(dataUrl);
+          
+          // Log the S3 URL in development mode
+          if (isDevelopment && modelScreenshotUrl) {
+            console.log('Model Screenshot uploaded to S3:', modelScreenshotUrl);
+          }
         }
       }
       
@@ -141,9 +146,6 @@ export default function Calculator() {
       // Show parameter log in development
       if (isDevelopment) {
         console.log('TypeForm Parameters:', Object.fromEntries(new URLSearchParams(typeformParams)));
-        if (modelScreenshotUrl) {
-          console.log('Model Screenshot URL:', modelScreenshotUrl);
-        }
       }
       
       // Get the full TypeForm URL from config
@@ -300,29 +302,31 @@ export default function Calculator() {
         </div>
 
         {/* Floor Area Type Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <span className="mr-2">Floor area calculation</span>
-            <InfoIcon
-              position="center"
-              content={
-                <>
-                  <p className="text-sm font-bold mb-2">Floor area calculation</p>
-                  <p className="text-sm mb-2">
-                    Gross floor area is measured to the exterior face of the perimeter of the home.
-                  </p>
-                  <p className="text-sm mb-2">
-                    Net, or 'livable' floor area is measured to the interior face of the perimeter of the home.
-                  </p>
-                  <p className="text-sm mb-2">
-                    Due to our thick super-insulated walls, the net floor area of a Take Place home will be approximately 8% less than the gross floor area.
-                  </p>
-                  <p className="text-sm">
-                    Toggling between these options changes the displayed square footage but does not affect the actual home configuration or price.
-                  </p>
-                </>
-              }
-            />
+        <div className="flex items-center relative">
+          <div className="flex-grow flex items-center">
+            <label className="flex items-center cursor-pointer">
+              <span>Floor area calculation</span>
+              <InfoIcon
+                position="right"
+                content={
+                  <>
+                    <p className="text-sm font-bold mb-2">Floor area calculation</p>
+                    <p className="text-sm mb-2">
+                      Gross floor area is measured to the exterior face of the perimeter of the home.
+                    </p>
+                    <p className="text-sm mb-2">
+                      Net, or 'livable' floor area is measured to the interior face of the perimeter of the home.
+                    </p>
+                    <p className="text-sm mb-2">
+                      Due to our thick super-insulated walls, the net floor area of a Take Place home will be approximately 8% less than the gross floor area.
+                    </p>
+                    <p className="text-sm">
+                      Toggling between these options changes the displayed square footage but does not affect the actual home configuration or price.
+                    </p>
+                  </>
+                }
+              />
+            </label>
           </div>
 
           <div className="flex items-center space-x-2">

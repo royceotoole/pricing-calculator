@@ -55,8 +55,8 @@
  * 
  * For model screenshot integration:
  * 1. Add a URL parameter field in TypeForm called 'model_screenshot_url'
- * 2. This URL will be passed to TypeForm and the agent can manually download the image
- * 3. Alternatively, you could implement a more robust solution with server-side image hosting
+ * 2. This URL will point to an AWS S3 bucket where the image is permanently stored
+ * 3. The S3 bucket is configured to make these images publicly accessible
  */
 
 // TypeForm ID for the custom proposal form
@@ -77,29 +77,29 @@ export const getTypeformUrl = (params: string) => {
 export const isDevelopment = process.env.NODE_ENV === 'development';
 
 /**
- * Convert a data URL to a Blob and create an object URL
- * This allows us to share the model screenshot with TypeForm.
+ * Upload an image data URL to AWS S3 via our API route
+ * This returns a permanent URL that can be accessed anywhere
  */
-export const dataUrlToObjectUrl = (dataUrl: string | null): string | null => {
+export const uploadImageToS3 = async (dataUrl: string | null): Promise<string | null> => {
   if (!dataUrl) return null;
   
   try {
-    // Parse the data URL
-    const arr = dataUrl.split(',');
-    const mime = arr[0].match(/:(.*?);/)?.[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
+    const response = await fetch('/api/upload-model-screenshot', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ dataUrl }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Upload failed with status: ${response.status}`);
     }
-    
-    // Create a Blob and generate an object URL
-    const blob = new Blob([u8arr], { type: mime });
-    return URL.createObjectURL(blob);
+
+    const data = await response.json();
+    return data.url;
   } catch (error) {
-    console.error('Error converting data URL to object URL:', error);
+    console.error('Error uploading image to S3:', error);
     return null;
   }
 }; 
