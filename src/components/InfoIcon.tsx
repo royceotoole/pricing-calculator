@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 interface InfoIconProps {
   content: React.ReactNode;
@@ -16,6 +16,12 @@ interface InfoIconProps {
  */
 export default function InfoIcon({ content, position = 'right' }: InfoIconProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  
+  // Tooltip & arrow positioning styles
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
+  const [arrowStyle, setArrowStyle] = useState<React.CSSProperties>({});
   
   // Toggle visibility on click (won't immediately close)
   const handleClick = (e: React.MouseEvent) => {
@@ -35,11 +41,13 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
   };
   
   // Close tooltip when clicking outside
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isVisible) return;
     
     const handleClickOutside = (e: MouseEvent) => {
-      setIsVisible(false);
+      if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
+        setIsVisible(false);
+      }
     };
     
     // Add a slight delay before attaching the event listener
@@ -54,8 +62,102 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
     };
   }, [isVisible]);
   
+  // Effect for measuring and positioning the tooltip
+  useEffect(() => {
+    if (!isVisible || !containerRef.current || !tooltipRef.current) return;
+    
+    // Calculate tooltip position based on container and window dimensions
+    const calcTooltipPosition = () => {
+      const containerRect = containerRef.current?.getBoundingClientRect();
+      const tooltipRect = tooltipRef.current?.getBoundingClientRect();
+      
+      if (!containerRect || !tooltipRect) return;
+      
+      const windowWidth = window.innerWidth;
+      const safeMargin = 16; // Safety margin from viewport edges (px)
+      
+      let newTooltipStyle: React.CSSProperties = {
+        bottom: '100%',
+        marginBottom: '8px',
+        maxWidth: `calc(100vw - ${safeMargin * 2}px)`,
+        width: '288px', // Fixed width for consistency
+      };
+      
+      let newArrowStyle: React.CSSProperties = {};
+      
+      // Calculate horizontal position
+      const iconCenterX = containerRect.left + (containerRect.width / 2);
+      
+      // Clamp positions to ensure tooltip stays within viewport
+      if (position === 'left' || (position === 'center' && iconCenterX < windowWidth / 3)) {
+        // Left-aligned positioning with boundary checks
+        newTooltipStyle.left = '0px';
+        newArrowStyle = { left: '10px', marginLeft: '-1.5px' };
+        
+        // Check if tooltip would overflow right edge
+        const rightEdge = containerRect.left + tooltipRect.width;
+        if (rightEdge > windowWidth - safeMargin) {
+          newTooltipStyle.left = 'auto';
+          newTooltipStyle.right = '0px';
+          newArrowStyle = { right: '10px', marginRight: '-1.5px' };
+        }
+      } 
+      else if (position === 'right' || (position === 'center' && iconCenterX > windowWidth * 2/3)) {
+        // Right-aligned positioning with boundary checks
+        newTooltipStyle.right = '0px';
+        newArrowStyle = { right: '10px', marginRight: '-1.5px' };
+        
+        // Check if tooltip would overflow left edge
+        const leftEdge = containerRect.right - tooltipRect.width;
+        if (leftEdge < safeMargin) {
+          newTooltipStyle.right = 'auto';
+          newTooltipStyle.left = '0px';
+          newArrowStyle = { left: '10px', marginLeft: '-1.5px' };
+        }
+      } 
+      else {
+        // Center positioning with boundary checks
+        newTooltipStyle.left = '50%';
+        newTooltipStyle.transform = 'translateX(-50%)';
+        newArrowStyle = { left: '50%', marginLeft: '-1.5px' };
+        
+        // Check if tooltip would overflow left edge
+        const leftEdge = iconCenterX - (tooltipRect.width / 2);
+        if (leftEdge < safeMargin) {
+          newTooltipStyle.left = '0px';
+          newTooltipStyle.transform = 'none';
+          newArrowStyle = { left: Math.max(10, iconCenterX - containerRect.left), marginLeft: '-1.5px' };
+        }
+        
+        // Check if tooltip would overflow right edge
+        const rightEdge = iconCenterX + (tooltipRect.width / 2);
+        if (rightEdge > windowWidth - safeMargin) {
+          newTooltipStyle.left = 'auto';
+          newTooltipStyle.right = '0px';
+          newTooltipStyle.transform = 'none';
+          newArrowStyle = { right: Math.max(10, containerRect.right - iconCenterX), marginRight: '-1.5px' };
+        }
+      }
+      
+      // Update the styles
+      setTooltipStyle(newTooltipStyle);
+      setArrowStyle(newArrowStyle);
+    };
+    
+    // Calculate position after render to get correct measurements
+    calcTooltipPosition();
+    
+    // Recalculate on resize
+    const handleResize = () => calcTooltipPosition();
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isVisible, position]);
+  
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block" ref={containerRef}>
       <div 
         className="inline-flex items-center justify-center rounded-full cursor-pointer ml-2 relative"
         style={{ 
@@ -72,56 +174,22 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
         <span className="font-serif text-sm">i</span>
       </div>
       
-      {renderTooltip(isVisible, content, position)}
+      {isVisible && (
+        <div 
+          className="absolute z-50"
+          style={tooltipStyle}
+          onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the tooltip
+          ref={tooltipRef}
+        >
+          <div className="relative p-4 bg-black text-white rounded shadow-lg z-20">
+            {content}
+            <div 
+              className="absolute bottom-0 translate-y-1/2 rotate-45 w-3 h-3 bg-black" 
+              style={arrowStyle}
+            ></div>
+          </div>
+        </div>
+      )}
     </div>
   )
-}
-
-/**
- * renderTooltip - A helper function for rendering tooltips with smart positioning
- * 
- * Handles tooltip positioning with mobile-friendly adjustments to prevent
- * content from being cut off the screen edge.
- */
-function renderTooltip(
-  visible: boolean, 
-  content: React.ReactNode, 
-  position: 'left' | 'right' | 'center' = 'right'
-) {
-  if (!visible) return null;
-  
-  let tooltipStyle = {};
-  let arrowStyle = {};
-  
-  // For left position, position arrow at 10px from left (center of icon)
-  if (position === 'left') {
-    tooltipStyle = { left: '0px', maxWidth: 'calc(100vw - 32px)' };
-    arrowStyle = { left: '10px', marginLeft: '-1.5px' };
-  } 
-  // For right position, position arrow at 10px from right (center of icon)
-  else if (position === 'right') {
-    tooltipStyle = { right: '0px', maxWidth: 'calc(100vw - 32px)' };
-    arrowStyle = { right: '10px', marginRight: '-1.5px' };
-  } 
-  // For center position, center everything
-  else {
-    tooltipStyle = { left: '50%', transform: 'translateX(-50%)', maxWidth: 'calc(100vw - 32px)' };
-    arrowStyle = { left: '50%', marginLeft: '-1.5px' };
-  }
-  
-  return (
-    <div 
-      className="absolute bottom-full mb-2 w-72"
-      style={tooltipStyle}
-      onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the tooltip
-    >
-      <div className="relative p-4 bg-black text-white rounded shadow-lg z-20">
-        {content}
-        <div 
-          className="absolute bottom-0 translate-y-1/2 rotate-45 w-3 h-3 bg-black" 
-          style={arrowStyle}
-        ></div>
-      </div>
-    </div>
-  );
 } 
