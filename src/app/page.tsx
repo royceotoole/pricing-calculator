@@ -9,7 +9,6 @@ import { ProvinceCode } from '../data/pricingData'
 export default function Home() {
   const [selectedProvince, setSelectedProvince] = useState<ProvinceCode | "">("")
   const [showError, setShowError] = useState(false)
-  const [email, setEmail] = useState("")
   
   // Get the setLocation function from context
   const { setLocation } = useCalculator()
@@ -101,18 +100,6 @@ export default function Home() {
               Please select a province before continuing
             </p>
           )}
-        </div>
-
-        <div className="mb-8">
-          <label className="block mb-4">Enter your email</label>
-          <input
-            type="text"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={`w-full p-4 pr-32 border rounded-lg bg-white font-['NeueHaasGroteskDisplayPro'] appearance-none ${showError ? 'border-red-500' : ''}`}
-            style={{ letterSpacing: "0.01em" }}
-            placeholder="Enter your email"
-          />
         </div>
       </div>
 
