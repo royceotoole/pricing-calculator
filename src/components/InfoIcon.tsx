@@ -16,6 +16,7 @@ interface InfoIconProps {
  */
 export default function InfoIcon({ content, position = 'right' }: InfoIconProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [isClickTriggered, setIsClickTriggered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   
@@ -28,17 +29,21 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event from bubbling up
     setIsVisible(!isVisible);
+    setIsClickTriggered(true); // Mark that tooltip was triggered by click
   };
   
   // Show on hover
   const handleMouseEnter = () => {
     setIsVisible(true);
+    setIsClickTriggered(false); // Mark that tooltip was triggered by hover
   };
   
-  // Hide on mouse leave only if not clicked
+  // Hide on mouse leave only if not clicked and not mobile
   const handleMouseLeave = () => {
-    // We don't automatically hide on mouse leave anymore
-    // to allow for better mobile experience
+    // If we're in desktop mode and the tooltip wasn't triggered by a click, close it
+    if (!isMobileView && !isClickTriggered) {
+      setIsVisible(false);
+    }
   };
   
   // Close tooltip when clicking outside
@@ -48,6 +53,7 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
     const handleClickOutside = (e: MouseEvent) => {
       if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node)) {
         setIsVisible(false);
+        setIsClickTriggered(false);
       }
     };
     
@@ -149,8 +155,31 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
     };
   }, [isVisible, position]);
   
+  // Effect to add mouseleave event on tooltip to mobile detection updates
+  useEffect(() => {
+    // If mobile status changes and we're not in a click-triggered state,
+    // we should update tooltip behavior
+    if (!isClickTriggered && !isMobileView && tooltipRef.current) {
+      const handleTooltipMouseLeave = () => {
+        setIsVisible(false);
+      };
+      
+      tooltipRef.current.addEventListener('mouseleave', handleTooltipMouseLeave);
+      
+      return () => {
+        if (tooltipRef.current) {
+          tooltipRef.current.removeEventListener('mouseleave', handleTooltipMouseLeave);
+        }
+      };
+    }
+  }, [isMobileView, isClickTriggered]);
+  
   return (
-    <div className="relative inline-block" ref={containerRef}>
+    <div 
+      className="relative inline-block" 
+      ref={containerRef}
+      onMouseLeave={handleMouseLeave}
+    >
       <div 
         className="inline-flex items-center justify-center rounded-full cursor-pointer ml-2 relative"
         style={{ 
@@ -161,7 +190,6 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
           backgroundColor: 'rgb(229, 231, 235)' // gray-200 
         }}
         onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
         onClick={handleClick}
       >
         <span className="font-serif text-sm">i</span>
@@ -177,7 +205,10 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
           <div className="relative p-4 bg-black text-white rounded shadow-lg z-20">
             {/* Show close button for all positions */}
             <button 
-              onClick={() => setIsVisible(false)}
+              onClick={() => {
+                setIsVisible(false);
+                setIsClickTriggered(false);
+              }}
               className="absolute top-1 right-1 p-2 text-white opacity-70 hover:opacity-100 transition-opacity"
               aria-label="Close tooltip"
             >
@@ -201,7 +232,10 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
             {isMobileView && (
               <div className="mt-4 flex justify-center">
                 <button
-                  onClick={() => setIsVisible(false)}
+                  onClick={() => {
+                    setIsVisible(false);
+                    setIsClickTriggered(false);
+                  }}
                   className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-white text-sm transition-colors"
                 >
                   Close

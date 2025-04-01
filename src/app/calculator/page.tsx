@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import { useCalculator, FloorAreaType } from '../context/CalculatorContext'
+import { useCalculator, FloorAreaType, MODULE_SIZES } from '../context/CalculatorContext'
 import { PRICING_CONSTANTS, PROVINCIAL_MULTIPLIERS } from '../../data/pricingData'
 import PriceDataLogger from '../components/PriceDataLogger'
 import InfoIcon from '../../components/InfoIcon'
@@ -29,7 +29,11 @@ export default function Calculator() {
     setIsEarlyAdopter,
     setFloorAreaType,
     estimatedPrice,
-    moduleSize
+    moduleSize,
+    // Display values
+    displayTotalSize,
+    displaySecondStorySize,
+    displayMainFloorSize
   } = useCalculator()
   
   // Keep mainFloorSize in sync when total or second story changes
@@ -89,7 +93,7 @@ export default function Calculator() {
           <div className="flex justify-between items-center mb-4">
             <label>Total size</label>
             <span className="mono-display-small inline-block btn-grey py-2 px-4">
-              {totalSize.toLocaleString()} SQFT
+              {displayTotalSize.toLocaleString()} SQFT
             </span>
           </div>
           <input
@@ -108,7 +112,7 @@ export default function Calculator() {
           <div className="flex justify-between items-center mb-4">
             <label>Main floor area</label>
             <span className="mono-display-small inline-block btn-grey py-2 px-4">
-              {mainFloorSize.toLocaleString()} SQFT
+              {displayMainFloorSize.toLocaleString()} SQFT
             </span>
           </div>
           <input
@@ -146,7 +150,7 @@ export default function Calculator() {
               />
             </div>
             <span className="mono-display-small inline-block btn-grey py-2 px-4">
-              {secondStorySize.toLocaleString()} SQFT
+              {displaySecondStorySize.toLocaleString()} SQFT
             </span>
           </div>
           <input
@@ -254,7 +258,7 @@ export default function Calculator() {
                 <span className="mono-display-large">${estimatedPrice.toLocaleString()}</span>
               </div>
               <div className="text-right flex justify-end items-center">
-                <span className="mono-display-gray">${Math.round(estimatedPrice / totalSize)}/SQFT</span>
+                <span className="mono-display-gray">${Math.round(estimatedPrice / displayTotalSize)}/SQFT</span>
               </div>
             </div>
 
@@ -277,7 +281,7 @@ export default function Calculator() {
                         Due to our thick super-insulated walls, the net floor area of a Take Place home will be approximately 8% less than the gross floor area.
                       </p>
                       <p className="text-sm">
-                        You can use this toggle to see how it impacts the configuration.
+                        Toggling between these options changes the displayed square footage but does not affect the actual home configuration or price.
                       </p>
                     </>
                   }

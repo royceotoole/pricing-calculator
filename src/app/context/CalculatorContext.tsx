@@ -12,6 +12,9 @@ export const MODULE_SIZES = {
   NET: 96,    // Net floor area module size (approximately 8% less)
 };
 
+// Conversion factor from gross to net (approximately 8% less)
+export const NET_TO_GROSS_RATIO = 96 / 104; // Approx 0.92
+
 interface CalculatorContextType {
   location: ProvinceCode
   floorAreaType: FloorAreaType
@@ -29,6 +32,11 @@ interface CalculatorContextType {
   setIsEarlyAdopter: (isEarlyAdopter: boolean) => void
   getPriceDataForTypeForm: () => TypeFormPriceData
   moduleSize: number // Current module size based on area type
+  
+  // Display values (what the user sees, based on floor area type)
+  displayTotalSize: number
+  displaySecondStorySize: number
+  displayMainFloorSize: number
 }
 
 // Structure for data to be sent to TypeForm
@@ -70,7 +78,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
   // Store detailed price breakdown
   const [detailedPriceBreakdown, setDetailedPriceBreakdown] = useState<DetailedPriceBreakdown | null>(null)
 
-  // Determine the current module size based on floor area type
+  // Determine the current module size based on floor area type - for UI only
   const moduleSize = floorAreaType === 'gross' ? MODULE_SIZES.GROSS : MODULE_SIZES.NET;
 
   // Keep mainFloorSize in sync when total or second story changes
@@ -79,35 +87,24 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     setMainFloorSize(newMainFloorSize)
   }, [totalSize, secondStorySize])
 
-  // Handle area type toggle to convert between gross and net
-  useEffect(() => {
-    if (floorAreaType === 'net') {
-      // When switching to net, maintain the same number of modules but with smaller sqft
-      const grossModules = Math.round(totalSize / MODULE_SIZES.GROSS);
-      const netTotalSize = grossModules * MODULE_SIZES.NET;
-      
-      const grossSecondFloorModules = Math.round(secondStorySize / MODULE_SIZES.GROSS);
-      const netSecondFloorSize = grossSecondFloorModules * MODULE_SIZES.NET;
-      
-      setTotalSize(netTotalSize);
-      setSecondStorySize(netSecondFloorSize);
-    } else {
-      // When switching to gross, maintain the same number of modules but with larger sqft
-      const netModules = Math.round(totalSize / MODULE_SIZES.NET);
-      const grossTotalSize = netModules * MODULE_SIZES.GROSS;
-      
-      const netSecondFloorModules = Math.round(secondStorySize / MODULE_SIZES.NET);
-      const grossSecondFloorSize = netSecondFloorModules * MODULE_SIZES.GROSS;
-      
-      setTotalSize(grossTotalSize);
-      setSecondStorySize(grossSecondFloorSize);
-    }
-  }, [floorAreaType]);
+  // Calculate display values based on floor area type
+  // These are used only for display and don't affect the actual configuration
+  const displayTotalSize = floorAreaType === 'gross' 
+    ? totalSize 
+    : Math.round(totalSize * NET_TO_GROSS_RATIO);
+    
+  const displaySecondStorySize = floorAreaType === 'gross'
+    ? secondStorySize
+    : Math.round(secondStorySize * NET_TO_GROSS_RATIO);
+    
+  const displayMainFloorSize = floorAreaType === 'gross'
+    ? mainFloorSize
+    : Math.round(mainFloorSize * NET_TO_GROSS_RATIO);
 
   // Adjust secondStorySize when mainFloorSize changes to maintain totalSize
   const updateMainFloorSize = (size: number) => {
     // Ensure the value is a multiple of the current module size
-    const adjustedSize = Math.floor(size / moduleSize) * moduleSize
+    const adjustedSize = Math.floor(size / MODULE_SIZES.GROSS) * MODULE_SIZES.GROSS
     
     // Calculate the new second story size
     const newSecondStorySize = totalSize - adjustedSize
@@ -116,7 +113,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     const maxSecondStory = Math.floor(totalSize / 2)
     
     // Set minimum second story size (3 modules)
-    const minSecondStory = 3 * moduleSize
+    const minSecondStory = 3 * MODULE_SIZES.GROSS
     
     if (newSecondStorySize <= maxSecondStory && newSecondStorySize >= minSecondStory) {
       // Update both values
@@ -170,9 +167,9 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     return {
       location,
       floorAreaType,
-      totalSize,
-      secondStorySize,
-      mainFloorSize,
+      totalSize: displayTotalSize, // Use display value to reflect what user sees
+      secondStorySize: displaySecondStorySize, // Use display value
+      mainFloorSize: displayMainFloorSize, // Use display value
       isEarlyAdopter,
       baseEstimate: breakdown.totalPrice,
       foundationEstimate: breakdown.additionalCosts.foundation.total,
@@ -207,7 +204,10 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
         setMainFloorSize: updateMainFloorSize,
         setIsEarlyAdopter,
         getPriceDataForTypeForm,
-        moduleSize
+        moduleSize,
+        displayTotalSize,
+        displaySecondStorySize,
+        displayMainFloorSize
       }}
     >
       {children}
