@@ -32,6 +32,7 @@ export default function SlidersEmbed() {
       <div className="mt-8">
         <button 
           className="w-full py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-['NeueHaasGroteskDisplayPro']"
+          style={{ letterSpacing: "0.01em" }}
           onClick={openTypeform}
         >
           Get your custom proposal

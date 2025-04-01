@@ -62,7 +62,7 @@ export default function Calculator() {
   }, [totalSize, secondStorySize, setSecondStorySize, setMainFloorSize])
 
   return (
-    <main className="min-h-screen px-8 py-8 w-full mx-auto font-['NeueHaasGroteskDisplayPro'] relative" style={{ maxWidth: "36rem" }}>
+    <main className="min-h-screen px-8 py-8 w-full mx-auto font-['NeueHaasGroteskDisplayPro'] relative" style={{ maxWidth: "36rem", letterSpacing: "0.01em" }}>
       {/* Hidden component to log detailed price data */}
       <PriceDataLogger />
       
@@ -319,7 +319,7 @@ export default function Calculator() {
             </div>
 
             {/* Book Meeting Button */}
-            <button className="w-full py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-['NeueHaasGroteskDisplayPro']">
+            <button className="w-full py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-['NeueHaasGroteskDisplayPro']" style={{ letterSpacing: "0.01em" }}>
               Get your custom proposal
             </button>
           </div>

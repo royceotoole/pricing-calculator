@@ -84,6 +84,7 @@ export default function PriceSummary({ className = '', showButton = true }: Pric
       {showButton && (
         <button 
           className="w-full py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-['NeueHaasGroteskDisplayPro']"
+          style={{ letterSpacing: "0.01em" }}
           onClick={openTypeform}
         >
           Get your custom proposal

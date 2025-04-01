@@ -8,6 +8,10 @@ import '../globals.css'
 // Use Inter font
 const inter = Inter({ subsets: ['latin'] })
 
+/**
+ * Special layout for embedded calculators
+ * This version has minimal UI and is meant to be embedded in iframes
+ */
 export default function EmbedLayout({
   children,
 }: {
@@ -17,7 +21,7 @@ export default function EmbedLayout({
     <html lang="en">
       <body className={`${inter.className} bg-transparent`}>
         <CalculatorProvider>
-          <div className="font-['NeueHaasGroteskDisplayPro']">
+          <div className="font-['NeueHaasGroteskDisplayPro']" style={{ letterSpacing: "0.01em" }}>
             {children}
           </div>
         </CalculatorProvider>

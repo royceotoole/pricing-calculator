@@ -9,6 +9,7 @@ import { ProvinceCode } from '../data/pricingData'
 export default function Home() {
   const [selectedProvince, setSelectedProvince] = useState<ProvinceCode | "">("")
   const [showError, setShowError] = useState(false)
+  const [email, setEmail] = useState("")
   
   // Get the setLocation function from context
   const { setLocation } = useCalculator()
@@ -31,7 +32,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen px-8 py-8 w-full mx-auto font-['NeueHaasGroteskDisplayPro'] relative" style={{ maxWidth: "36rem" }}>
+    <main className="min-h-screen px-8 py-8 w-full mx-auto font-['NeueHaasGroteskDisplayPro'] relative" style={{ maxWidth: "36rem", letterSpacing: "0.01em" }}>
       <nav className="mb-12">
         <Link href="/" className="inline-flex items-center btn-grey py-2 px-4">
           ← home
@@ -70,6 +71,7 @@ export default function Home() {
           <div className="relative">
             <select 
               className={`w-full p-4 pr-32 border rounded-lg bg-white font-['NeueHaasGroteskDisplayPro'] appearance-none ${showError ? 'border-red-500' : ''}`}
+              style={{ letterSpacing: "0.01em" }}
               value={selectedProvince}
               onChange={handleProvinceChange}
             >
@@ -99,6 +101,18 @@ export default function Home() {
               Please select a province before continuing
             </p>
           )}
+        </div>
+
+        <div className="mb-8">
+          <label className="block mb-4">Enter your email</label>
+          <input
+            type="text"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={`w-full p-4 pr-32 border rounded-lg bg-white font-['NeueHaasGroteskDisplayPro'] appearance-none ${showError ? 'border-red-500' : ''}`}
+            style={{ letterSpacing: "0.01em" }}
+            placeholder="Enter your email"
+          />
         </div>
       </div>
 

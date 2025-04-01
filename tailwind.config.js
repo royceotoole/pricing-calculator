@@ -6,7 +6,14 @@ module.exports = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'neue-haas': ['NeueHaasGroteskDisplayPro', 'sans-serif'],
+      },
+      letterSpacing: {
+        'neue': '0.01em',
+      },
+    },
   },
   plugins: [],
 }
