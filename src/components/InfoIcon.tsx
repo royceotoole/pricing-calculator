@@ -22,6 +22,7 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
   // Tooltip & arrow positioning styles
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
   const [arrowStyle, setArrowStyle] = useState<React.CSSProperties>({});
+  const [isMobileView, setIsMobileView] = useState(false);
   
   // Toggle visibility on click (won't immediately close)
   const handleClick = (e: React.MouseEvent) => {
@@ -74,68 +75,57 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
       if (!containerRect || !tooltipRect) return;
       
       const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const isMobile = windowWidth < 768;
+      setIsMobileView(isMobile);
+      
       const safeMargin = 16; // Safety margin from viewport edges (px)
       
-      let newTooltipStyle: React.CSSProperties = {
-        bottom: '100%',
-        marginBottom: '8px',
-        maxWidth: `calc(100vw - ${safeMargin * 2}px)`,
-        width: '288px', // Fixed width for consistency
-      };
-      
+      let newTooltipStyle: React.CSSProperties = {};
       let newArrowStyle: React.CSSProperties = {};
       
-      // Calculate horizontal position
-      const iconCenterX = containerRect.left + (containerRect.width / 2);
-      
-      // Clamp positions to ensure tooltip stays within viewport
-      if (position === 'left' || (position === 'center' && iconCenterX < windowWidth / 3)) {
-        // Left-aligned positioning with boundary checks
-        newTooltipStyle.left = '0px';
-        newArrowStyle = { left: '10px', marginLeft: '-1.5px' };
+      // On mobile, always center the tooltip on screen
+      if (isMobile) {
+        // Fixed position centered in the screen
+        newTooltipStyle = {
+          position: 'fixed',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 'calc(100vw - 48px)',  // Full width minus margins
+          maxWidth: '320px',            // Max width for larger phones
+          zIndex: 100,
+          boxShadow: '0 0 0 5000px rgba(0,0,0,0.5)' // Dim the background
+        };
         
-        // Check if tooltip would overflow right edge
-        const rightEdge = containerRect.left + tooltipRect.width;
-        if (rightEdge > windowWidth - safeMargin) {
-          newTooltipStyle.left = 'auto';
-          newTooltipStyle.right = '0px';
-          newArrowStyle = { right: '10px', marginRight: '-1.5px' };
-        }
-      } 
-      else if (position === 'right' || (position === 'center' && iconCenterX > windowWidth * 2/3)) {
-        // Right-aligned positioning with boundary checks
-        newTooltipStyle.right = '0px';
-        newArrowStyle = { right: '10px', marginRight: '-1.5px' };
+        // For mobile, we don't need an arrow since it's a centered modal
+        newArrowStyle = { display: 'none' };
+      } else {
+        // Desktop positioning logic - standard dropdown
+        newTooltipStyle = {
+          bottom: '100%',
+          marginBottom: '8px',
+          maxWidth: '288px', // Fixed width for consistency
+          width: '288px',
+        };
         
-        // Check if tooltip would overflow left edge
-        const leftEdge = containerRect.right - tooltipRect.width;
-        if (leftEdge < safeMargin) {
-          newTooltipStyle.right = 'auto';
+        // Calculate horizontal position for desktop
+        const iconCenterX = containerRect.left + (containerRect.width / 2);
+        
+        // Position based on specified preference
+        if (position === 'left') {
           newTooltipStyle.left = '0px';
           newArrowStyle = { left: '10px', marginLeft: '-1.5px' };
-        }
-      } 
-      else {
-        // Center positioning with boundary checks
-        newTooltipStyle.left = '50%';
-        newTooltipStyle.transform = 'translateX(-50%)';
-        newArrowStyle = { left: '50%', marginLeft: '-1.5px' };
-        
-        // Check if tooltip would overflow left edge
-        const leftEdge = iconCenterX - (tooltipRect.width / 2);
-        if (leftEdge < safeMargin) {
-          newTooltipStyle.left = '0px';
-          newTooltipStyle.transform = 'none';
-          newArrowStyle = { left: Math.max(10, iconCenterX - containerRect.left), marginLeft: '-1.5px' };
-        }
-        
-        // Check if tooltip would overflow right edge
-        const rightEdge = iconCenterX + (tooltipRect.width / 2);
-        if (rightEdge > windowWidth - safeMargin) {
-          newTooltipStyle.left = 'auto';
+        } 
+        else if (position === 'right') {
           newTooltipStyle.right = '0px';
-          newTooltipStyle.transform = 'none';
-          newArrowStyle = { right: Math.max(10, containerRect.right - iconCenterX), marginRight: '-1.5px' };
+          newArrowStyle = { right: '10px', marginRight: '-1.5px' };
+        } 
+        else {
+          // Center positioning
+          newTooltipStyle.left = '50%';
+          newTooltipStyle.transform = 'translateX(-50%)';
+          newArrowStyle = { left: '50%', marginLeft: '-1.5px' };
         }
       }
       
@@ -182,11 +172,37 @@ export default function InfoIcon({ content, position = 'right' }: InfoIconProps)
           ref={tooltipRef}
         >
           <div className="relative p-4 bg-black text-white rounded shadow-lg z-20">
+            {isMobileView && (
+              <button 
+                onClick={() => setIsVisible(false)}
+                className="absolute top-1 right-1 p-2 text-white opacity-70 hover:opacity-100 transition-opacity"
+                aria-label="Close tooltip"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
+            
             {content}
-            <div 
-              className="absolute bottom-0 translate-y-1/2 rotate-45 w-3 h-3 bg-black" 
-              style={arrowStyle}
-            ></div>
+            
+            {!isMobileView && (
+              <div 
+                className="absolute bottom-0 translate-y-1/2 rotate-45 w-3 h-3 bg-black" 
+                style={arrowStyle}
+              ></div>
+            )}
+            
+            {isMobileView && (
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={() => setIsVisible(false)}
+                  className="px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-white text-sm transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
