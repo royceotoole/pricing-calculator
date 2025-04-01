@@ -11,7 +11,7 @@
  * 3. Go to your form and look at the URL, which will be in this format:
  *    https://admin.typeform.com/form/XXXXXX/create
  *    Where XXXXXX is your TypeForm ID
- * 4. Copy this ID and replace 'XXXXX' below
+ * 4. Copy this ID and replace the value below
  * 
  * Setting Up URL Parameters in TypeForm:
  * 1. In your TypeForm, click "Settings" > "URL variables/parameters"
@@ -35,24 +35,13 @@
  * 
  * Price Fields:
  * - base_price: The total base price
- * - base_price_only: The core base price without add-ons
  * - price_per_sqft: Price per square foot
- * - main_floor_cost: Cost of the main floor
- * - second_floor_cost: Cost of the second floor
- * - provincial_multiplier: Provincial pricing multiplier
- * - early_adopter_discount: Discount amount for early adopters
  * 
- * Foundation Fields:
- * - foundation_estimate: Total foundation cost
- * - foundation_bearing_piles: Number of bearing piles
- * - foundation_bracing_piles: Number of bracing piles
- * 
- * Additional Cost Fields:
+ * Additional Cost Fields (final calculated values):
+ * - foundation_estimate: Foundation cost
  * - appliances_estimate_min: Minimum appliance cost
  * - appliances_estimate_max: Maximum appliance cost
- * - delivery_estimate: Total delivery cost
- * - delivery_containers: Number of containers
- * - delivery_distance_km: Shipping distance
+ * - delivery_estimate: Delivery cost
  * - electrical_hookup_estimate: Electrical hookup cost
  * - sewer_water_septic_min: Minimum sewer/water/septic cost
  * - sewer_water_septic_max: Maximum sewer/water/septic cost
