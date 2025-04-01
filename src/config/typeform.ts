@@ -13,19 +13,25 @@
  *    Where XXXXXX is your TypeForm ID
  * 4. Copy this ID and replace 'XXXXX' below
  * 
- * Setting Up Hidden Fields in TypeForm:
- * 1. In your TypeForm, click "Create" or "Add Question"
- * 2. Choose "Hidden Fields" from the question types (often under "More")
- * 3. Add hidden fields with EXACTLY the same variable names as listed below:
+ * Setting Up URL Parameters in TypeForm:
+ * 1. In your TypeForm, click "Settings" > "URL variables/parameters"
+ * 2. Add all the variables listed below with EXACTLY the same names
  * 
  * Basic Information Fields:
  * - province: The selected Canadian province
- * - total_size: Total square footage of the home
- * - main_floor_size: Square footage of the main floor
- * - second_floor_size: Square footage of the second floor
- * - floor_area_type: Whether measurements are gross or net
- * - early_adopter: Whether early adopter discount was selected
+ * - floor_area_type: Whether user was viewing in gross or net mode (just for reference)
  * - source: Which part of the app initiated the form
+ * - early_adopter: Whether early adopter discount was selected
+ * 
+ * Size Fields (ALWAYS in gross square footage regardless of toggle):
+ * - total_size: Total gross square footage of the home
+ * - main_floor_size: Gross square footage of the main floor
+ * - second_floor_size: Gross square footage of the second floor
+ * 
+ * Display Size Fields (what user sees based on gross/net toggle):
+ * - display_total_size: Total size as displayed to user
+ * - display_main_floor_size: Main floor size as displayed to user
+ * - display_second_floor_size: Second floor size as displayed to user
  * 
  * Price Fields:
  * - base_price: The total base price

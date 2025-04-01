@@ -30,10 +30,17 @@ export default function AllEmbed() {
       // Location details
       'province': typeformData.location,
       
-      // Size details (using display values based on selected floor area type)
+      // Size details (always in gross sqft regardless of toggle)
       'total_size': typeformData.totalSize.toString(),
       'main_floor_size': typeformData.mainFloorSize.toString(),
       'second_floor_size': typeformData.secondStorySize.toString(),
+      
+      // Display size values (what the user sees based on toggle)
+      'display_total_size': typeformData.displayTotalSize.toString(),
+      'display_main_floor_size': typeformData.displayMainFloorSize.toString(),
+      'display_second_floor_size': typeformData.displaySecondStorySize.toString(),
+      
+      // Which floor area type was toggled
       'floor_area_type': typeformData.floorAreaType,
       
       // Price details

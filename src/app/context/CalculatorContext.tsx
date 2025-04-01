@@ -46,6 +46,9 @@ export interface TypeFormPriceData {
   totalSize: number
   secondStorySize: number
   mainFloorSize: number
+  displayTotalSize: number
+  displaySecondStorySize: number
+  displayMainFloorSize: number
   isEarlyAdopter: boolean
   baseEstimate: number
   foundationEstimate: number
@@ -168,9 +171,14 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     return {
       location,
       floorAreaType,
-      totalSize: displayTotalSize, // Use display value to reflect what user sees
-      secondStorySize: displaySecondStorySize, // Use display value
-      mainFloorSize: displayMainFloorSize, // Use display value
+      // Always use gross values for TypeForm, regardless of display toggle
+      totalSize: totalSize, // Always use gross value
+      secondStorySize: secondStorySize, // Always use gross value 
+      mainFloorSize: mainFloorSize, // Always use gross value
+      // Include display values as separate fields for reference
+      displayTotalSize: displayTotalSize, 
+      displaySecondStorySize: displaySecondStorySize,
+      displayMainFloorSize: displayMainFloorSize,
       isEarlyAdopter,
       baseEstimate: breakdown.totalPrice,
       foundationEstimate: breakdown.additionalCosts.foundation.total,
