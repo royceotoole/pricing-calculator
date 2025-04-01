@@ -762,6 +762,7 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center', // Center vertically
+      backgroundColor: 'transparent', // Ensure background is transparent
     }}>
       {/* Remove Suspense and handle loading state differently */}
       <Canvas 
@@ -782,7 +783,11 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
           height: '100%',
           display: 'block',
           touchAction: 'none', // Disable browser touch actions
-          position: 'absolute' // Ensure canvas stays fixed in container
+          position: 'absolute', // Ensure canvas stays fixed in container
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0
         }}
         dpr={dpr}
         camera={{ 
@@ -808,7 +813,7 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
         <pointLight position={[10, 10, 10]} intensity={0.8} />
         <directionalLight position={[5, 10, 5]} intensity={0.8} castShadow />
         
-        {/* Make sure position is consistent */}
+        {/* Centered house model - adjusted for proper vertical centering */}
         <group position={[0, 0, 0]}>
           <HouseModel totalSize={totalSize} secondStorySize={secondStorySize} />
         </group>
@@ -832,7 +837,7 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
         </div>
       )}
 
-      {/* Legend in bottom left corner - ensuring proper positioning on mobile */}
+      {/* Legend in bottom left corner - adjusting position to ensure proper spacing */}
       {isLoaded && (
         <div style={{
           position: 'absolute',
@@ -841,15 +846,16 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
           padding: '12px 15px',
           backgroundColor: 'rgba(255,255,255,0.1)',
           borderRadius: '6px',
-          fontSize: '14px', // Reverting to original size
+          fontSize: '14px',
           fontFamily: '"Suisse Intl Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace',
           fontWeight: '500',
           textTransform: 'uppercase',
           letterSpacing: '0.5px',
-          zIndex: 10, // Ensure it's above everything else
+          zIndex: 10,
           userSelect: 'none',
           pointerEvents: 'none', // Don't interfere with touch events
-          maxWidth: '90%' // Prevent overflow on small screens
+          maxWidth: '90%', // Prevent overflow on small screens
+          margin: 0 // Remove any default margin
         }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
             <div style={{ 
@@ -857,7 +863,8 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
               height: '16.8px', 
               backgroundColor: 'rgba(0,0,0,0.75)',
               border: '0.5px solid rgba(255,255,255,0.8)',
-              marginRight: '10px' 
+              marginRight: '10px',
+              flexShrink: 0 // Prevent shrinking
             }}></div>
             <span style={{ opacity: 0.5 }}>FLOOR AREA</span>
           </div>
@@ -874,7 +881,8 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
               borderColor: '#000',
               backgroundSize: '4.8px 4.8px', 
               marginRight: '10px',
-              boxSizing: 'border-box'
+              boxSizing: 'border-box',
+              flexShrink: 0 // Prevent shrinking
             }}></div>
             <span style={{ opacity: 0.5 }}>OPEN TO BELOW</span>
           </div>
@@ -896,7 +904,8 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
           zIndex: 10,
           userSelect: 'none',
           opacity: 0.5,
-          pointerEvents: 'none' // Don't interfere with touch events
+          pointerEvents: 'none', // Don't interfere with touch events
+          margin: 0 // Remove any default margin
         }}>
           CONFIGURATION
         </div>

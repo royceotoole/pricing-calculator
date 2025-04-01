@@ -1,35 +1,78 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 
 interface InfoIconProps {
-  onClick: () => void;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
+  content: React.ReactNode;
+  position?: 'left' | 'right' | 'center';
 }
 
 /**
- * InfoIcon - A standardized circular information icon
+ * InfoIcon - A standardized circular information icon with tooltip
  * 
  * This component ensures that all info icons in the application have
  * a consistent circular appearance and proper mobile display.
+ * It also manages its own tooltip visibility state.
  */
-export default function InfoIcon({ onClick, onMouseEnter, onMouseLeave }: InfoIconProps) {
+export default function InfoIcon({ content, position = 'right' }: InfoIconProps) {
+  const [isVisible, setIsVisible] = useState(false);
+  
+  // Toggle visibility on click (won't immediately close)
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event from bubbling up
+    setIsVisible(!isVisible);
+  };
+  
+  // Show on hover
+  const handleMouseEnter = () => {
+    setIsVisible(true);
+  };
+  
+  // Hide on mouse leave only if not clicked
+  const handleMouseLeave = () => {
+    // We don't automatically hide on mouse leave anymore
+    // to allow for better mobile experience
+  };
+  
+  // Close tooltip when clicking outside
+  React.useEffect(() => {
+    if (!isVisible) return;
+    
+    const handleClickOutside = (e: MouseEvent) => {
+      setIsVisible(false);
+    };
+    
+    // Add a slight delay before attaching the event listener
+    // to prevent immediate closing on the first click
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside);
+    }, 100);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isVisible]);
+  
   return (
-    <div 
-      className="inline-flex items-center justify-center rounded-full cursor-pointer ml-2 relative"
-      style={{ 
-        width: '20px', 
-        height: '20px', 
-        minWidth: '20px', 
-        minHeight: '20px',
-        backgroundColor: 'rgb(229, 231, 235)' // gray-200 
-      }}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onClick={onClick}
-    >
-      <span className="font-serif text-sm">i</span>
+    <div className="relative inline-block">
+      <div 
+        className="inline-flex items-center justify-center rounded-full cursor-pointer ml-2 relative"
+        style={{ 
+          width: '20px', 
+          height: '20px', 
+          minWidth: '20px', 
+          minHeight: '20px',
+          backgroundColor: 'rgb(229, 231, 235)' // gray-200 
+        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
+      >
+        <span className="font-serif text-sm">i</span>
+      </div>
+      
+      {renderTooltip(isVisible, content, position)}
     </div>
   )
 }
@@ -40,7 +83,7 @@ export default function InfoIcon({ onClick, onMouseEnter, onMouseLeave }: InfoIc
  * Handles tooltip positioning with mobile-friendly adjustments to prevent
  * content from being cut off the screen edge.
  */
-export function renderTooltip(
+function renderTooltip(
   visible: boolean, 
   content: React.ReactNode, 
   position: 'left' | 'right' | 'center' = 'right'
@@ -70,6 +113,7 @@ export function renderTooltip(
     <div 
       className="absolute bottom-full mb-2 w-72"
       style={tooltipStyle}
+      onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the tooltip
     >
       <div className="relative p-4 bg-black text-white rounded shadow-lg z-20">
         {content}
