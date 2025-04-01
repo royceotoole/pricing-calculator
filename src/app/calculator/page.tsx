@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 import { useCalculator } from '../context/CalculatorContext'
 import { PRICING_CONSTANTS, PROVINCIAL_MULTIPLIERS } from '../../data/pricingData'
 import PriceDataLogger from '../components/PriceDataLogger'
+import InfoIcon, { renderTooltip } from '../../components/InfoIcon'
 
 // Dynamically import the House3D component with no SSR
 const House3D = dynamic(() => import('../components/House3D'), { 
@@ -34,45 +35,6 @@ export default function Calculator() {
   const [showBaseCostTooltip, setShowBaseCostTooltip] = useState(false)
   const [showCostPerSqftTooltip, setShowCostPerSqftTooltip] = useState(false)
   const [showExtraCostsTooltip, setShowExtraCostsTooltip] = useState(false)
-
-  // Function to render tooltip with intelligent positioning
-  const renderTooltip = (visible: boolean, content: React.ReactNode, position: 'left' | 'right' | 'center' = 'right') => {
-    if (!visible) return null;
-    
-    let tooltipStyle = {};
-    let arrowStyle = {};
-    
-    // For left position, position arrow at 10px from left (center of icon)
-    if (position === 'left') {
-      tooltipStyle = { left: '-5px' };
-      arrowStyle = { left: '10px', marginLeft: '-1.5px' };
-    } 
-    // For right position, position arrow at 10px from right (center of icon)
-    else if (position === 'right') {
-      tooltipStyle = { right: '-5px' };
-      arrowStyle = { right: '10px', marginRight: '-1.5px' };
-    } 
-    // For center position, center everything
-    else {
-      tooltipStyle = { left: '50%', transform: 'translateX(-50%)' };
-      arrowStyle = { left: '50%', marginLeft: '-1.5px' };
-    }
-    
-    return (
-      <div 
-        className="absolute bottom-full mb-2 w-72"
-        style={tooltipStyle}
-      >
-        <div className="relative p-4 bg-black text-white rounded shadow-lg z-20">
-          {content}
-          <div 
-            className="absolute bottom-0 translate-y-1/2 rotate-45 w-3 h-3 bg-black" 
-            style={arrowStyle}
-          ></div>
-        </div>
-      </div>
-    );
-  };
 
   // Keep mainFloorSize in sync when total or second story changes
   useEffect(() => {
@@ -172,27 +134,24 @@ export default function Calculator() {
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center">
               <label>Second floor area</label>
-              <div 
-                className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full cursor-pointer ml-2 relative"
+              <InfoIcon
                 onMouseEnter={() => setShowSecondFloorTooltip(true)}
                 onMouseLeave={() => setShowSecondFloorTooltip(false)}
                 onClick={() => setShowSecondFloorTooltip(!showSecondFloorTooltip)}
-              >
-                <span className="font-serif text-sm">i</span>
-                {renderTooltip(
-                  showSecondFloorTooltip, 
-                  <>
-                    <p className="text-sm font-bold mb-2">Second Floor Area</p>
-                    <p className="text-sm mb-2">
-                      Our homes are designed as two-storey structures, but you choose how much second-floor area you want and how much remains as vaulted, 23-foot-high open-to-above spaces.
-                    </p>
-                    <p className="text-sm">
-                      Adding second-floor space is an economical way to increase practical living area, while open-to-above sections create exciting, dynamic spaces.
-                    </p>
-                  </>,
-                  'left'
-                )}
-              </div>
+              />
+              {renderTooltip(
+                showSecondFloorTooltip, 
+                <>
+                  <p className="text-sm font-bold mb-2">Second Floor Area</p>
+                  <p className="text-sm mb-2">
+                    Our homes are designed as two-storey structures, but you choose how much second-floor area you want and how much remains as vaulted, 23-foot-high open-to-above spaces.
+                  </p>
+                  <p className="text-sm">
+                    Adding second-floor space is an economical way to increase practical living area, while open-to-above sections create exciting, dynamic spaces.
+                  </p>
+                </>,
+                'left'
+              )}
             </div>
             <span className="mono-display-small inline-block btn-grey py-2 px-4">
               {secondStorySize.toLocaleString()} SQFT
@@ -228,24 +187,21 @@ export default function Calculator() {
           <div className="flex-grow flex items-center">
             <label className="flex items-center cursor-pointer">
               <span>Are you interested in the Early Adopter Incentive?</span>
-              <div 
-                className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full cursor-pointer ml-2 relative"
+              <InfoIcon
                 onMouseEnter={() => setShowTooltip(true)}
                 onMouseLeave={() => setShowTooltip(false)}
                 onClick={() => setShowTooltip(!showTooltip)}
-              >
-                <span className="font-serif text-sm">i</span>
-                {renderTooltip(
-                  showTooltip,
-                  <>
-                    <p className="text-sm font-bold mb-2">Early Adopter Incentive</p>
-                    <p className="text-sm mb-2">
-                      We're a new company, and although we're already underway on our first homes, we'll continue fine-tuning our process and timelines over the next year. As a show of appreciation to clients who recognize this, we're offering an exclusive discount of <span className="font-bold">$10 per sqft</span> for commitments made before July 1, 2025.
-                    </p>
-                  </>,
-                  'right'
-                )}
-              </div>
+              />
+              {renderTooltip(
+                showTooltip,
+                <>
+                  <p className="text-sm font-bold mb-2">Early Adopter Incentive</p>
+                  <p className="text-sm mb-2">
+                    We're a new company, and although we're already underway on our first homes, we'll continue fine-tuning our process and timelines over the next year. As a show of appreciation to clients who recognize this, we're offering an exclusive discount of <span className="font-bold">$10 per sqft</span> for commitments made before July 1, 2025.
+                  </p>
+                </>,
+                'right'
+              )}
             </label>
           </div>
           <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', minWidth: '40px' }}>
@@ -278,39 +234,36 @@ export default function Calculator() {
             <div className="flex justify-between items-start mb-2">
               <div className="flex items-center">
                 <span className="text-gray-600">Base Price</span>
-                <div 
-                  className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full cursor-pointer ml-2 relative"
+                <InfoIcon
                   onMouseEnter={() => setShowBaseCostTooltip(true)}
                   onMouseLeave={() => setShowBaseCostTooltip(false)}
                   onClick={() => setShowBaseCostTooltip(!showBaseCostTooltip)}
-                >
-                  <span className="font-serif text-sm">i</span>
-                  {renderTooltip(
-                    showBaseCostTooltip,
-                    <>
-                      <p className="text-sm font-bold mb-2">Base Price</p>
-                      <p className="text-sm mb-2">
-                        Our Base Price includes our entire kit, complete with our Take Place base finish package, premium Fisher & Paykel appliances, white-glove design service, on-site assembly, and MEP trades.
-                      </p>
-                      <p className="text-sm font-bold mb-2">Extra Costs</p>
-                      <p className="text-sm mb-2">
-                        We don't include certain items in our Base Price because they can vary significantly based on the specifics of your location, property, and individual preferences. These items are:
-                      </p>
-                      <ul className="text-sm list-disc pl-5 mb-2">
-                        <li>Foundation</li>
-                        <li>Delivery</li>
-                        <li>Site hookups (electrical, sewer/septic, water)</li>
-                        <li>Permit fees</li>
-                        <li>Optional add-ons (decks, balconies, built-ins, etc.)</li>
-                      </ul>
-                      <p className="text-sm mb-2">
-                        Typically, these items will add about 10% (+/- 5%) to the Base Price, depending on the factors listed above.
-                      </p>
-                      <p className="text-sm italic">All prices are before tax.</p>
-                    </>,
-                    'left'
-                  )}
-                </div>
+                />
+                {renderTooltip(
+                  showBaseCostTooltip,
+                  <>
+                    <p className="text-sm font-bold mb-2">Base Price</p>
+                    <p className="text-sm mb-2">
+                      Our Base Price includes our entire kit, complete with our Take Place base finish package, premium Fisher & Paykel appliances, white-glove design service, on-site assembly, and MEP trades.
+                    </p>
+                    <p className="text-sm font-bold mb-2">Extra Costs</p>
+                    <p className="text-sm mb-2">
+                      We don't include certain items in our Base Price because they can vary significantly based on the specifics of your location, property, and individual preferences. These items are:
+                    </p>
+                    <ul className="text-sm list-disc pl-5 mb-2">
+                      <li>Foundation</li>
+                      <li>Delivery</li>
+                      <li>Site hookups (electrical, sewer/septic, water)</li>
+                      <li>Permit fees</li>
+                      <li>Optional add-ons (decks, balconies, built-ins, etc.)</li>
+                    </ul>
+                    <p className="text-sm mb-2">
+                      Typically, these items will add about 10% (+/- 5%) to the Base Price, depending on the factors listed above.
+                    </p>
+                    <p className="text-sm italic">All prices are before tax.</p>
+                  </>,
+                  'left'
+                )}
               </div>
               <span className="mono-display-large">${estimatedPrice.toLocaleString()}</span>
             </div>
@@ -318,21 +271,18 @@ export default function Calculator() {
               <span className="mono-display-gray">${Math.round(estimatedPrice / totalSize)}/SQFT</span>
               
               {/* Cost per SQFT info button */}
-              <div 
-                className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full cursor-pointer ml-2 relative"
+              <InfoIcon
                 onMouseEnter={() => setShowCostPerSqftTooltip(true)}
                 onMouseLeave={() => setShowCostPerSqftTooltip(false)}
                 onClick={() => setShowCostPerSqftTooltip(!showCostPerSqftTooltip)}
-              >
-                <span className="font-serif text-sm">i</span>
-                {renderTooltip(
-                  showCostPerSqftTooltip,
-                  <>
-                    <p className="text-sm">Price per sqft is measured to the exterior face of the building.</p>
-                  </>,
-                  'right'
-                )}
-              </div>
+              />
+              {renderTooltip(
+                showCostPerSqftTooltip,
+                <>
+                  <p className="text-sm">Price per sqft is measured to the exterior face of the building.</p>
+                </>,
+                'right'
+              )}
             </div>
           </div>
 

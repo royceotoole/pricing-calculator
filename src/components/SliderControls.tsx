@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react'
 import { useCalculator } from '../app/context/CalculatorContext'
+import InfoIcon, { renderTooltip } from './InfoIcon'
 
 interface SliderControlsProps {
   className?: string;
@@ -22,45 +23,6 @@ export default function SliderControls({ className = '' }: SliderControlsProps) 
   // State for tooltips visibility
   const [showTooltip, setShowTooltip] = React.useState(false)
   const [showSecondFloorTooltip, setShowSecondFloorTooltip] = React.useState(false)
-
-  // Function to render tooltip with intelligent positioning
-  const renderTooltip = (visible: boolean, content: React.ReactNode, position: 'left' | 'right' | 'center' = 'right') => {
-    if (!visible) return null;
-    
-    let tooltipStyle = {};
-    let arrowStyle = {};
-    
-    // For left position, position arrow at 10px from left (center of icon)
-    if (position === 'left') {
-      tooltipStyle = { left: '-5px' };
-      arrowStyle = { left: '10px', marginLeft: '-1.5px' };
-    } 
-    // For right position, position arrow at 10px from right (center of icon)
-    else if (position === 'right') {
-      tooltipStyle = { right: '-5px' };
-      arrowStyle = { right: '10px', marginRight: '-1.5px' };
-    } 
-    // For center position, center everything
-    else {
-      tooltipStyle = { left: '50%', transform: 'translateX(-50%)' };
-      arrowStyle = { left: '50%', marginLeft: '-1.5px' };
-    }
-    
-    return (
-      <div 
-        className="absolute bottom-full mb-2 w-72"
-        style={tooltipStyle}
-      >
-        <div className="relative p-4 bg-black text-white rounded shadow-lg z-20">
-          {content}
-          <div 
-            className="absolute bottom-0 translate-y-1/2 rotate-45 w-3 h-3 bg-black" 
-            style={arrowStyle}
-          ></div>
-        </div>
-      </div>
-    );
-  };
 
   // Ensure second story size doesn't exceed half of total size when total size changes
   // Also ensure it doesn't go below the minimum of 288 sqft
@@ -129,27 +91,24 @@ export default function SliderControls({ className = '' }: SliderControlsProps) 
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
             <label>Second floor area</label>
-            <div 
-              className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full cursor-pointer ml-2 relative"
+            <InfoIcon
               onMouseEnter={() => setShowSecondFloorTooltip(true)}
               onMouseLeave={() => setShowSecondFloorTooltip(false)}
               onClick={() => setShowSecondFloorTooltip(!showSecondFloorTooltip)}
-            >
-              <span className="font-serif text-sm">i</span>
-              {renderTooltip(
-                showSecondFloorTooltip, 
-                <>
-                  <p className="text-sm font-bold mb-2">Second Floor Area</p>
-                  <p className="text-sm mb-2">
-                    Our homes are designed as two-storey structures, but you choose how much second-floor area you want and how much remains as vaulted, 23-foot-high open-to-above spaces.
-                  </p>
-                  <p className="text-sm">
-                    Adding second-floor space is an economical way to increase practical living area, while open-to-above sections create exciting, dynamic spaces.
-                  </p>
-                </>,
-                'left'
-              )}
-            </div>
+            />
+            {renderTooltip(
+              showSecondFloorTooltip, 
+              <>
+                <p className="text-sm font-bold mb-2">Second Floor Area</p>
+                <p className="text-sm mb-2">
+                  Our homes are designed as two-storey structures, but you choose how much second-floor area you want and how much remains as vaulted, 23-foot-high open-to-above spaces.
+                </p>
+                <p className="text-sm">
+                  Adding second-floor space is an economical way to increase practical living area, while open-to-above sections create exciting, dynamic spaces.
+                </p>
+              </>,
+              'left'
+            )}
           </div>
           <span className="mono-display-small inline-block btn-grey py-2 px-4">
             {secondStorySize.toLocaleString()} SQFT
@@ -178,24 +137,21 @@ export default function SliderControls({ className = '' }: SliderControlsProps) 
         <div className="flex-grow flex items-center">
           <label className="flex items-center cursor-pointer">
             <span>Are you interested in the Early Adopter Incentive?</span>
-            <div 
-              className="inline-flex items-center justify-center w-5 h-5 bg-gray-200 rounded-full cursor-pointer ml-2 relative"
+            <InfoIcon
               onMouseEnter={() => setShowTooltip(true)}
               onMouseLeave={() => setShowTooltip(false)}
               onClick={() => setShowTooltip(!showTooltip)}
-            >
-              <span className="font-serif text-sm">i</span>
-              {renderTooltip(
-                showTooltip,
-                <>
-                  <p className="text-sm font-bold mb-2">Early Adopter Incentive</p>
-                  <p className="text-sm mb-2">
-                    We're a new company, and although we're already underway on our first homes, we'll continue fine-tuning our process and timelines over the next year. As a show of appreciation to clients who recognize this, we're offering an exclusive discount of <span className="font-bold">$10 per sqft</span> for commitments made before July 1, 2025.
-                  </p>
-                </>,
-                'right'
-              )}
-            </div>
+            />
+            {renderTooltip(
+              showTooltip,
+              <>
+                <p className="text-sm font-bold mb-2">Early Adopter Incentive</p>
+                <p className="text-sm mb-2">
+                  We're a new company, and although we're already underway on our first homes, we'll continue fine-tuning our process and timelines over the next year. As a show of appreciation to clients who recognize this, we're offering an exclusive discount of <span className="font-bold">$10 per sqft</span> for commitments made before July 1, 2025.
+                </p>
+              </>,
+              'right'
+            )}
           </label>
         </div>
         <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', minWidth: '40px' }}>
