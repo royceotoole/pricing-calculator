@@ -331,7 +331,7 @@ export default function Calculator() {
               className={`${isExpanded ? 'mb-4' : 'mb-0'} cursor-pointer md:cursor-default`} 
               onClick={() => window.innerWidth < 768 && setIsExpanded(!isExpanded)}
             >
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex justify-between items-start mb-2">
                 <div className="flex items-center">
                   <span className="text-gray-600">Base Price</span>
                   <InfoIcon
@@ -362,9 +362,15 @@ export default function Calculator() {
                   />
                 </div>
                 <span className="mono-display-large">${estimatedPrice.toLocaleString()}</span>
-                
-                {/* Expand/collapse icon for mobile only */}
-                <div className="ml-2 md:hidden">
+              </div>
+              
+              <div className="text-right flex justify-end items-center">
+                <span className="mono-display-gray">${Math.round(estimatedPrice / displayTotalSize)}/SQFT</span>
+              </div>
+              
+              {/* Expand/collapse icon for mobile only - centered */}
+              <div className="flex justify-center mt-2 md:hidden">
+                <div className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200">
                   <svg 
                     className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
                     fill="none" 
@@ -374,10 +380,6 @@ export default function Calculator() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
-              </div>
-              
-              <div className="text-right flex justify-end items-center">
-                <span className="mono-display-gray">${Math.round(estimatedPrice / displayTotalSize)}/SQFT</span>
               </div>
             </div>
 
