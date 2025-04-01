@@ -8,13 +8,14 @@ import { useCalculator, FloorAreaType, MODULE_SIZES } from '../context/Calculato
 import { PRICING_CONSTANTS, PROVINCIAL_MULTIPLIERS } from '../../data/pricingData'
 import PriceDataLogger from '../components/PriceDataLogger'
 import InfoIcon from '../../components/InfoIcon'
-import { getTypeformUrl, isDevelopment } from '../../config/typeform'
+import { getTypeformUrl, isDevelopment, dataUrlToObjectUrl } from '../../config/typeform'
+import House3D, { House3DRef } from '../components/House3D'
 
 // Dynamically import the House3D component with no SSR
-const House3D = dynamic(() => import('../components/House3D'), { 
-  ssr: false,
-  loading: () => <div className="w-full h-full flex items-center justify-center">Loading 3D model...</div>
-})
+// const House3D = dynamic(() => import('../components/House3D'), { 
+//   ssr: false,
+//   loading: () => <div className="w-full h-full flex items-center justify-center">Loading 3D model...</div>
+// })
 
 export default function Calculator() {
   const {
@@ -39,6 +40,8 @@ export default function Calculator() {
   } = useCalculator()
   
   const mainContentRef = useRef<HTMLDivElement>(null);
+  const house3DRef = useRef<House3DRef>(null);
+  const [isCapturingModel, setIsCapturingModel] = useState(false);
 
   // Keep mainFloorSize in sync when total or second story changes
   useEffect(() => {
@@ -66,64 +69,102 @@ export default function Calculator() {
   }, [totalSize, secondStorySize, setSecondStorySize, setMainFloorSize])
 
   // Function to open TypeForm with all calculator data
-  const openTypeform = () => {
-    // Get all data from context
-    const typeformData = getPriceDataForTypeForm();
+  const openTypeform = async () => {
+    setIsCapturingModel(true);
     
-    // Convert to URL parameters
-    const typeformParams = new URLSearchParams({
-      // Location details
-      'province': typeformData.location,
+    try {
+      // Try to capture a screenshot of the 3D model
+      let modelScreenshotUrl = null;
+      if (house3DRef.current) {
+        const dataUrl = await house3DRef.current.captureScreenshot();
+        if (dataUrl) {
+          // Convert data URL to an object URL that can be accessed by TypeForm
+          modelScreenshotUrl = dataUrlToObjectUrl(dataUrl);
+        }
+      }
       
-      // Size details (always in gross sqft regardless of toggle)
-      'total_size': typeformData.totalSize.toString(),
-      'main_floor_size': typeformData.mainFloorSize.toString(),
-      'second_floor_size': typeformData.secondStorySize.toString(),
+      // Get all data from context
+      const typeformData = getPriceDataForTypeForm();
       
-      // Display size values (what the user sees based on toggle)
-      'display_total_size': typeformData.displayTotalSize.toString(),
-      'display_main_floor_size': typeformData.displayMainFloorSize.toString(),
-      'display_second_floor_size': typeformData.displaySecondStorySize.toString(),
+      // Convert to URL parameters
+      const params: Record<string, string> = {
+        // Location details
+        'province': typeformData.location,
+        
+        // Size details (always in gross sqft regardless of toggle)
+        'total_size': typeformData.totalSize.toString(),
+        'main_floor_size': typeformData.mainFloorSize.toString(),
+        'second_floor_size': typeformData.secondStorySize.toString(),
+        
+        // Display size values (what the user sees based on toggle)
+        'display_total_size': typeformData.displayTotalSize.toString(),
+        'display_main_floor_size': typeformData.displayMainFloorSize.toString(),
+        'display_second_floor_size': typeformData.displaySecondStorySize.toString(),
+        
+        // Which floor area type was toggled
+        'floor_area_type': typeformData.floorAreaType,
+        
+        // Price details - simplified
+        'base_price': typeformData.baseEstimate.toString(),
+        'price_per_sqft': Math.round(typeformData.baseEstimate / typeformData.totalSize).toString(),
+        
+        // Additional costs - simplified to only final values
+        'foundation_estimate': typeformData.foundationEstimate.toString(),
+        'appliances_estimate_min': typeformData.appliancesEstimateMin.toString(),
+        'appliances_estimate_max': typeformData.appliancesEstimateMax.toString(),
+        'delivery_estimate': typeformData.deliveryEstimate.toString(),
+        'electrical_hookup_estimate': typeformData.electricalHookupEstimate.toString(),
+        'sewer_water_septic_min': typeformData.sewerWaterSepticEstimateMin.toString(),
+        'sewer_water_septic_max': typeformData.sewerWaterSepticEstimateMax.toString(),
+        'permit_fees_estimate': typeformData.permitFeesEstimate.toString(),
+        
+        // Total estimates
+        'grand_total_min': typeformData.grandTotalMin.toString(),
+        'grand_total_max': typeformData.grandTotalMax.toString(),
+        'grand_total_average': typeformData.grandTotalAverage.toString(),
+        
+        // Early adopter status
+        'early_adopter': typeformData.isEarlyAdopter ? 'Yes' : 'No',
+        
+        // Add source
+        'source': 'calculator_page'
+      };
       
-      // Which floor area type was toggled
-      'floor_area_type': typeformData.floorAreaType,
+      // Add model screenshot URL if available
+      if (modelScreenshotUrl) {
+        params['model_screenshot_url'] = modelScreenshotUrl;
+      }
       
-      // Price details - simplified
-      'base_price': typeformData.baseEstimate.toString(),
-      'price_per_sqft': Math.round(typeformData.baseEstimate / typeformData.totalSize).toString(),
+      // Convert params object to URL parameters
+      const typeformParams = new URLSearchParams(params).toString();
       
-      // Additional costs - simplified to only final values
-      'foundation_estimate': typeformData.foundationEstimate.toString(),
-      'appliances_estimate_min': typeformData.appliancesEstimateMin.toString(),
-      'appliances_estimate_max': typeformData.appliancesEstimateMax.toString(),
-      'delivery_estimate': typeformData.deliveryEstimate.toString(),
-      'electrical_hookup_estimate': typeformData.electricalHookupEstimate.toString(),
-      'sewer_water_septic_min': typeformData.sewerWaterSepticEstimateMin.toString(),
-      'sewer_water_septic_max': typeformData.sewerWaterSepticEstimateMax.toString(),
-      'permit_fees_estimate': typeformData.permitFeesEstimate.toString(),
+      // Show parameter log in development
+      if (isDevelopment) {
+        console.log('TypeForm Parameters:', Object.fromEntries(new URLSearchParams(typeformParams)));
+        if (modelScreenshotUrl) {
+          console.log('Model Screenshot URL:', modelScreenshotUrl);
+        }
+      }
       
-      // Total estimates
-      'grand_total_min': typeformData.grandTotalMin.toString(),
-      'grand_total_max': typeformData.grandTotalMax.toString(),
-      'grand_total_average': typeformData.grandTotalAverage.toString(),
+      // Get the full TypeForm URL from config
+      const typeformUrl = getTypeformUrl(typeformParams);
       
-      // Early adopter status
-      'early_adopter': typeformData.isEarlyAdopter ? 'Yes' : 'No',
+      // Open TypeForm in a new tab
+      window.open(typeformUrl, '_blank');
+    } catch (error) {
+      console.error('Error preparing TypeForm data:', error);
       
-      // Add source
-      'source': 'calculator_page'
-    }).toString();
-    
-    // Show parameter log in development
-    if (isDevelopment) {
-      console.log('TypeForm Parameters:', Object.fromEntries(new URLSearchParams(typeformParams)));
+      // Fallback to opening TypeForm without screenshot
+      const fallbackParams = new URLSearchParams({
+        'province': location,
+        'total_size': totalSize.toString(),
+        'source': 'calculator_page_error',
+      }).toString();
+      
+      window.open(getTypeformUrl(fallbackParams), '_blank');
+    } finally {
+      setIsCapturingModel(false);
     }
-    
-    // Get the full TypeForm URL from config
-    const typeformUrl = getTypeformUrl(typeformParams);
-    
-    // Open TypeForm in a new tab
-    window.open(typeformUrl, '_blank');
   };
 
   return (
@@ -243,7 +284,18 @@ export default function Calculator() {
         {/* Configuration Viewer */}
         <div>
           <div className="w-full relative">
-            <House3D />
+            <House3D ref={house3DRef} />
+            {isCapturingModel && (
+              <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center">
+                <div className="flex flex-col items-center text-sm">
+                  <svg className="animate-spin h-8 w-8 text-black mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Capturing model...
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -394,8 +446,9 @@ export default function Calculator() {
                 className="w-full py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-['NeueHaasGroteskDisplayPro']" 
                 style={{ letterSpacing: "0.01em" }}
                 onClick={openTypeform}
+                disabled={isCapturingModel}
               >
-                Get your custom proposal
+                {isCapturingModel ? 'Preparing proposal...' : 'Get your custom proposal'}
               </button>
             </div>
           </div>

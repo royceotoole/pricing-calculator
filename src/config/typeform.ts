@@ -22,6 +22,7 @@
  * - floor_area_type: Whether user was viewing in gross or net mode (just for reference)
  * - source: Which part of the app initiated the form
  * - early_adopter: Whether early adopter discount was selected
+ * - model_screenshot_url: URL to the model screenshot (if available)
  * 
  * Size Fields (ALWAYS in gross square footage regardless of toggle):
  * - total_size: Total gross square footage of the home
@@ -51,6 +52,11 @@
  * - grand_total_min: Minimum overall cost
  * - grand_total_max: Maximum overall cost
  * - grand_total_average: Average overall cost
+ * 
+ * For model screenshot integration:
+ * 1. Add a URL parameter field in TypeForm called 'model_screenshot_url'
+ * 2. This URL will be passed to TypeForm and the agent can manually download the image
+ * 3. Alternatively, you could implement a more robust solution with server-side image hosting
  */
 
 // TypeForm ID for the custom proposal form
@@ -68,4 +74,32 @@ export const getTypeformUrl = (params: string) => {
  * Determines if the environment is running in development mode.
  * This can be used to show debug information for TypeForm parameters.
  */
-export const isDevelopment = process.env.NODE_ENV === 'development'; 
+export const isDevelopment = process.env.NODE_ENV === 'development';
+
+/**
+ * Convert a data URL to a Blob and create an object URL
+ * This allows us to share the model screenshot with TypeForm.
+ */
+export const dataUrlToObjectUrl = (dataUrl: string | null): string | null => {
+  if (!dataUrl) return null;
+  
+  try {
+    // Parse the data URL
+    const arr = dataUrl.split(',');
+    const mime = arr[0].match(/:(.*?);/)?.[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    
+    // Create a Blob and generate an object URL
+    const blob = new Blob([u8arr], { type: mime });
+    return URL.createObjectURL(blob);
+  } catch (error) {
+    console.error('Error converting data URL to object URL:', error);
+    return null;
+  }
+}; 

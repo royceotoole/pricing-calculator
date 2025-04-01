@@ -17,6 +17,7 @@ declare namespace JSX {
 interface ThreeSceneProps {
   totalSize: number
   secondStorySize: number
+  onCanvasRef?: (canvas: HTMLCanvasElement) => void
 }
 
 // Create materials
@@ -52,6 +53,19 @@ const translucent = new THREE.MeshPhysicalMaterial({
   transmission: 0.9,
   side: THREE.DoubleSide
 })
+
+// Helper component to access the canvas ref
+function CanvasRefHelper({ onCanvasRef }: { onCanvasRef?: (canvas: HTMLCanvasElement) => void }) {
+  const { gl } = useThree();
+  
+  useEffect(() => {
+    if (onCanvasRef && gl.domElement) {
+      onCanvasRef(gl.domElement);
+    }
+  }, [gl.domElement, onCanvasRef]);
+  
+  return null;
+}
 
 function HouseModel({ totalSize, secondStorySize }: ThreeSceneProps) {
   // Constants in feet
@@ -665,7 +679,7 @@ const checkWebGLSupport = () => {
   }
 };
 
-export default function ThreeScene({ totalSize, secondStorySize }: ThreeSceneProps) {
+export default function ThreeScene({ totalSize, secondStorySize, onCanvasRef }: ThreeSceneProps) {
   // Add error handling for the Canvas component
   const [renderError, setRenderError] = React.useState<Error | null>(null);
   const [isLoaded, setIsLoaded] = React.useState(false);
@@ -801,6 +815,8 @@ export default function ThreeScene({ totalSize, secondStorySize }: ThreeScenePro
         fallback={loadingFallback}
         raycaster={{ params: { Line: { threshold: 0.15 }, Points: { threshold: 0.15 } } }}
       >
+        {/* Helper to get canvas reference */}
+        <CanvasRefHelper onCanvasRef={onCanvasRef} />
         <CameraController />
         <OrthographicCamera 
           makeDefault

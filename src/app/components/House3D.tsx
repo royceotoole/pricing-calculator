@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useImperativeHandle, forwardRef } from 'react'
 import { useCalculator } from '../context/CalculatorContext'
 import dynamic from 'next/dynamic'
 
@@ -8,6 +8,12 @@ import dynamic from 'next/dynamic'
 interface ThreeSceneProps {
   totalSize: number;
   secondStorySize: number;
+  onCanvasRef?: (canvas: HTMLCanvasElement) => void;
+}
+
+// Type definition for external methods
+export interface House3DRef {
+  captureScreenshot: () => Promise<string | null>;
 }
 
 // Use noSSR pattern with properly typed component to avoid async/await issues
@@ -42,9 +48,10 @@ function ErrorBoundary({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-export default function House3D() {
+const House3D = forwardRef<House3DRef, {}>((props, ref) => {
   const { totalSize, secondStorySize } = useCalculator()
   const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   
   // Track container dimensions for responsive sizing and maintain aspect ratio
   useEffect(() => {
@@ -77,6 +84,30 @@ export default function House3D() {
       }
     };
   }, []);
+
+  // Function to save the canvas reference from ThreeScene
+  const handleCanvasRef = (canvas: HTMLCanvasElement) => {
+    canvasRef.current = canvas;
+  };
+  
+  // Expose methods to parent components
+  useImperativeHandle(ref, () => ({
+    captureScreenshot: async () => {
+      try {
+        if (!canvasRef.current) {
+          console.warn('Canvas not available for screenshot');
+          return null;
+        }
+        
+        // Create a data URL from the canvas
+        const dataUrl = canvasRef.current.toDataURL('image/png');
+        return dataUrl;
+      } catch (error) {
+        console.error('Error capturing 3D model screenshot:', error);
+        return null;
+      }
+    }
+  }));
   
   return (
     <ErrorBoundary>
@@ -89,9 +120,17 @@ export default function House3D() {
             marginBottom: '1rem' // Ensure consistent bottom margin
           }}
         >
-          <ThreeScene totalSize={totalSize} secondStorySize={secondStorySize} />
+          <ThreeScene 
+            totalSize={totalSize} 
+            secondStorySize={secondStorySize} 
+            onCanvasRef={handleCanvasRef}
+          />
         </div>
       </div>
     </ErrorBoundary>
   )
-} 
+})
+
+House3D.displayName = 'House3D';
+
+export default House3D; 
