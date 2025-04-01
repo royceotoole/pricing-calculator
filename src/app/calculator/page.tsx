@@ -83,9 +83,28 @@ export default function Calculator() {
       'base_price': typeformData.baseEstimate.toString(),
       'price_per_sqft': Math.round(typeformData.baseEstimate / typeformData.totalSize).toString(),
       
+      // Base price breakdown - now included
+      'base_price_only': typeformData.detailedPriceBreakdown?.basePrice.toString() || '',
+      'main_floor_cost': typeformData.detailedPriceBreakdown?.mainFloorCost.toString() || '',
+      'second_floor_cost': typeformData.detailedPriceBreakdown?.secondFloorCost.toString() || '',
+      'provincial_multiplier': typeformData.detailedPriceBreakdown?.provincialMultiplier.toString() || '',
+      'early_adopter_discount': typeformData.detailedPriceBreakdown?.earlyAdopterDiscount.toString() || '',
+      
       // Additional costs
       'foundation_estimate': typeformData.foundationEstimate.toString(),
+      'foundation_bearing_piles': typeformData.detailedPriceBreakdown?.additionalCosts.foundation.bearingPiles.quantity.toString() || '',
+      'foundation_bracing_piles': typeformData.detailedPriceBreakdown?.additionalCosts.foundation.bracingPiles.quantity.toString() || '',
+      
+      // Appliance costs - now included
+      'appliances_estimate_min': typeformData.appliancesEstimateMin.toString(),
+      'appliances_estimate_max': typeformData.appliancesEstimateMax.toString(),
+      
+      // Delivery breakdown - now included
       'delivery_estimate': typeformData.deliveryEstimate.toString(),
+      'delivery_containers': typeformData.detailedPriceBreakdown?.additionalCosts.delivery.containers.quantity.toString() || '',
+      'delivery_distance_km': typeformData.detailedPriceBreakdown?.additionalCosts.delivery.distance.km.toString() || '',
+      
+      // Remaining costs
       'electrical_hookup_estimate': typeformData.electricalHookupEstimate.toString(),
       'sewer_water_septic_min': typeformData.sewerWaterSepticEstimateMin.toString(),
       'sewer_water_septic_max': typeformData.sewerWaterSepticEstimateMax.toString(),
@@ -98,6 +117,9 @@ export default function Calculator() {
       
       // Early adopter status
       'early_adopter': typeformData.isEarlyAdopter ? 'Yes' : 'No',
+      
+      // Add source
+      'source': 'calculator_page'
     }).toString();
     
     // Show parameter log in development

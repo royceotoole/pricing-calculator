@@ -59,6 +59,7 @@ export interface TypeFormPriceData {
   grandTotalMin: number
   grandTotalMax: number
   grandTotalAverage: number
+  detailedPriceBreakdown: DetailedPriceBreakdown | null
 }
 
 const CalculatorContext = createContext<CalculatorContextType | undefined>(undefined)
@@ -182,7 +183,8 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
       permitFeesEstimate: breakdown.additionalCosts.permitFees.total,
       grandTotalMin: breakdown.grandTotal.min,
       grandTotalMax: breakdown.grandTotal.max,
-      grandTotalAverage: breakdown.grandTotal.average
+      grandTotalAverage: breakdown.grandTotal.average,
+      detailedPriceBreakdown: breakdown
     }
   }
 
