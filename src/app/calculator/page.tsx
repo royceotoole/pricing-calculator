@@ -213,60 +213,63 @@ export default function Calculator() {
       
       {/* Sticky bottom section */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-10">
-        <div className="px-8 py-8 w-full mx-auto" style={{ maxWidth: "36rem" }}>
-          {/* Price Display */}
-          <div className="mb-4">
-            <div className="flex justify-between items-start mb-2">
-              <div className="flex items-center">
-                <span className="text-gray-600">Base Price</span>
+        <div className="px-8 w-full mx-auto" style={{ maxWidth: "36rem" }}>
+          {/* Mobile reduced padding, desktop regular padding */}
+          <div className="pt-[1.4rem] pb-[1.5rem] md:py-8">
+            {/* Price Display */}
+            <div className="mb-4">
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex items-center">
+                  <span className="text-gray-600">Base Price</span>
+                  <InfoIcon
+                    position="left"
+                    content={
+                      <>
+                        <p className="text-sm font-bold mb-2">Base Price</p>
+                        <p className="text-sm mb-2">
+                          Our Base Price includes our entire kit, complete with our Take Place base finish package, premium Fisher & Paykel appliances, white-glove design service, on-site assembly, and MEP trades.
+                        </p>
+                        <p className="text-sm font-bold mb-2">Extra Costs</p>
+                        <p className="text-sm mb-2">
+                          We don't include certain items in our Base Price because they can vary significantly based on the specifics of your location, property, and individual preferences. These items are:
+                        </p>
+                        <ul className="text-sm list-disc pl-5 mb-2">
+                          <li>Foundation</li>
+                          <li>Delivery</li>
+                          <li>Site hookups (electrical, sewer/septic, water)</li>
+                          <li>Permit fees</li>
+                          <li>Optional add-ons (decks, balconies, built-ins, etc.)</li>
+                        </ul>
+                        <p className="text-sm mb-2">
+                          Typically, these items will add about 10% (+/- 5%) to the Base Price, depending on the factors listed above.
+                        </p>
+                        <p className="text-sm italic">All prices are before tax.</p>
+                      </>
+                    }
+                  />
+                </div>
+                <span className="mono-display-large">${estimatedPrice.toLocaleString()}</span>
+              </div>
+              <div className="text-right flex justify-end items-center">
+                <span className="mono-display-gray">${Math.round(estimatedPrice / totalSize)}/SQFT</span>
+                
+                {/* Cost per SQFT info button */}
                 <InfoIcon
-                  position="left"
+                  position="right"
                   content={
                     <>
-                      <p className="text-sm font-bold mb-2">Base Price</p>
-                      <p className="text-sm mb-2">
-                        Our Base Price includes our entire kit, complete with our Take Place base finish package, premium Fisher & Paykel appliances, white-glove design service, on-site assembly, and MEP trades.
-                      </p>
-                      <p className="text-sm font-bold mb-2">Extra Costs</p>
-                      <p className="text-sm mb-2">
-                        We don't include certain items in our Base Price because they can vary significantly based on the specifics of your location, property, and individual preferences. These items are:
-                      </p>
-                      <ul className="text-sm list-disc pl-5 mb-2">
-                        <li>Foundation</li>
-                        <li>Delivery</li>
-                        <li>Site hookups (electrical, sewer/septic, water)</li>
-                        <li>Permit fees</li>
-                        <li>Optional add-ons (decks, balconies, built-ins, etc.)</li>
-                      </ul>
-                      <p className="text-sm mb-2">
-                        Typically, these items will add about 10% (+/- 5%) to the Base Price, depending on the factors listed above.
-                      </p>
-                      <p className="text-sm italic">All prices are before tax.</p>
+                      <p className="text-sm">Price per sqft is measured to the exterior face of the building.</p>
                     </>
                   }
                 />
               </div>
-              <span className="mono-display-large">${estimatedPrice.toLocaleString()}</span>
             </div>
-            <div className="text-right flex justify-end items-center">
-              <span className="mono-display-gray">${Math.round(estimatedPrice / totalSize)}/SQFT</span>
-              
-              {/* Cost per SQFT info button */}
-              <InfoIcon
-                position="right"
-                content={
-                  <>
-                    <p className="text-sm">Price per sqft is measured to the exterior face of the building.</p>
-                  </>
-                }
-              />
-            </div>
-          </div>
 
-          {/* Book Meeting Button */}
-          <button className="w-full py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-['NeueHaasGroteskDisplayPro']">
-            Get your custom proposal
-          </button>
+            {/* Book Meeting Button */}
+            <button className="w-full py-4 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-['NeueHaasGroteskDisplayPro']">
+              Get your custom proposal
+            </button>
+          </div>
         </div>
       </div>
     </main>
