@@ -91,11 +91,29 @@ export default function Calculator() {
             console.log('Uploading screenshot to S3...');
             
             try {
+              // Check if we're in a production environment (like Vercel)
+              const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production';
+              console.log('Environment:', isProduction ? 'Production' : 'Development');
+              
+              // Add environment information to debug issues
+              if (isProduction) {
+                console.log('Running on Vercel production environment');
+              }
+              
               // Use the imported uploadImageToS3 function
               modelScreenshotUrl = await uploadImageToS3(dataUrl);
               console.log('S3 Upload result:', modelScreenshotUrl || 'Failed to upload');
+              
+              // Log the result status and add domain info to help with CORS debugging
+              if (modelScreenshotUrl) {
+                console.log('Upload succeeded with URL:', modelScreenshotUrl);
+                console.log('Current domain:', window.location.origin);
+              } else {
+                console.error('Upload failed - no URL returned');
+              }
             } catch (uploadError) {
               console.error('Error during S3 upload:', uploadError);
+              console.error('Upload error details:', uploadError instanceof Error ? uploadError.message : String(uploadError));
               processingError = uploadError;
             }
           }

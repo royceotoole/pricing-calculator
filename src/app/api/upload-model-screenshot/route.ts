@@ -33,6 +33,24 @@ async function testS3Connection() {
     return true;
   } catch (error) {
     console.error('S3 connection test failed:', error);
+    // More detailed error logging
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      
+      // Log specific AWS error information if available
+      const awsError = error as any;
+      if (awsError.$metadata) {
+        console.error('AWS error metadata:', JSON.stringify(awsError.$metadata));
+      }
+      if (awsError.Code) {
+        console.error('AWS error code:', awsError.Code);
+      }
+      if (awsError.Message) {
+        console.error('AWS error message:', awsError.Message);
+      }
+    }
     return false;
   }
 }
@@ -47,6 +65,7 @@ export async function POST(request: NextRequest) {
   console.log('Using region:', process.env.AWS_REGION || 'us-east-2');
   console.log('Access key ID exists:', !!process.env.AWS_ACCESS_KEY_ID);
   console.log('Secret access key exists:', !!process.env.AWS_SECRET_ACCESS_KEY);
+  console.log('Access key ID first 4 chars:', process.env.AWS_ACCESS_KEY_ID ? process.env.AWS_ACCESS_KEY_ID.substring(0, 4) : 'none');
   
   // Test S3 connection first to catch credential issues early
   const connectionTestResult = await testS3Connection();
@@ -160,8 +179,32 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ url: fileUrl });
       } catch (s3Error) {
         console.error('S3 client error during upload:', s3Error);
+        
+        // Enhanced error logging
+        if (s3Error instanceof Error) {
+          console.error('S3 error name:', s3Error.name);
+          console.error('S3 error message:', s3Error.message);
+          console.error('S3 error stack:', s3Error.stack);
+          
+          // Log specific AWS error information if available
+          const awsError = s3Error as any;
+          if (awsError.$metadata) {
+            console.error('AWS error metadata:', JSON.stringify(awsError.$metadata));
+          }
+          if (awsError.Code) {
+            console.error('AWS error code:', awsError.Code);
+          }
+          if (awsError.Message) {
+            console.error('AWS error message:', awsError.Message);
+          }
+        }
+        
         return NextResponse.json(
-          { error: "S3 upload failed", details: String(s3Error) },
+          { 
+            error: "S3 upload failed", 
+            details: String(s3Error),
+            message: s3Error instanceof Error ? s3Error.message : 'Unknown error'
+          },
           { status: 500 }
         );
       }

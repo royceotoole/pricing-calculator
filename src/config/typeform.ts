@@ -96,8 +96,15 @@ export const uploadImageToS3 = async (dataUrl: string | null): Promise<string | 
   try {
     console.log('Making fetch request to upload API endpoint...', new Date().toISOString());
     
+    // Detect environment
+    const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost';
+    console.log('Environment detected:', isProduction ? 'Production' : 'Development');
+    console.log('Current hostname:', typeof window !== 'undefined' ? window.location.hostname : 'SSR');
+
     // Add a random query parameter to avoid any caching issues
     const apiUrl = `/api/upload-model-screenshot?t=${Date.now()}`;
+    
+    console.log('Fetch request to:', apiUrl);
     
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -112,13 +119,35 @@ export const uploadImageToS3 = async (dataUrl: string | null): Promise<string | 
     
     if (!response.ok) {
       let errorMessage = `Upload failed with status: ${response.status}`;
+      let errorBody = '';
+      
       try {
-        const errorText = await response.text();
-        console.error('S3 upload API error:', errorText);
-        errorMessage += `, error: ${errorText}`;
+        errorBody = await response.text();
+        console.error('S3 upload API error response:', errorBody);
+        
+        // Try to parse the error as JSON if possible
+        try {
+          const errorJson = JSON.parse(errorBody);
+          console.error('S3 upload API error details:', errorJson);
+          
+          // Add detailed error information
+          if (errorJson.error) {
+            errorMessage += `, error: ${errorJson.error}`;
+          }
+          if (errorJson.details) {
+            errorMessage += `, details: ${errorJson.details}`;
+          }
+          if (errorJson.message) {
+            errorMessage += `, message: ${errorJson.message}`;
+          }
+        } catch (jsonError) {
+          // Not JSON, use the raw text
+          errorMessage += `, error: ${errorBody}`;
+        }
       } catch (textError) {
         console.error('Could not read error response text:', textError);
       }
+      
       throw new Error(errorMessage);
     }
 
