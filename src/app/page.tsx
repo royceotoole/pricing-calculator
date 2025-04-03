@@ -33,7 +33,7 @@ export default function Home() {
   return (
     <main className="min-h-screen px-8 py-8 w-full mx-auto font-['NeueHaasGroteskDisplayPro'] relative" style={{ maxWidth: "36rem", letterSpacing: "0.01em" }}>
       <nav className="mb-12">
-        <Link href="/" className="inline-flex items-center btn-grey py-2 px-4">
+        <Link href="https://www.takeplace.ca" className="inline-flex items-center btn-grey py-2 px-4">
           ← home
         </Link>
       </nav>
