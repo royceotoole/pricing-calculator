@@ -16,7 +16,7 @@ export const PRICING_CONSTANTS = {
   SECOND_FLOOR_RATE: 166,
   
   // Early adopter discount per square foot
-  EARLY_ADOPTER_DISCOUNT_PER_SQFT: 10,
+  EARLY_ADOPTER_DISCOUNT_PER_SQFT: 15,
 
   // Foundation costs
   FOUNDATION: {

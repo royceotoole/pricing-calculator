@@ -417,7 +417,7 @@ export default function Calculator() {
                   <>
                     <p className="text-sm font-bold mb-2">Early Adopter Incentive</p>
                     <p className="text-sm mb-2">
-                      We're a new company, and although we're already underway on our first homes, we'll continue fine-tuning our process and timelines over the next year. As a show of appreciation to clients who recognize this, we're offering an exclusive discount of <span className="font-bold">$10 per sqft</span> for commitments made before July 1, 2025.
+                      We're a new company, and although we're already underway on our first homes, we'll continue fine-tuning our process and timelines over the next year. As a show of appreciation to clients who recognize this, we're offering an exclusive discount of <span className="font-bold">$15 per sqft</span> for commitments made before July 1, 2025.
                     </p>
                   </>
                 }
