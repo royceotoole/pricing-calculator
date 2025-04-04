@@ -135,19 +135,19 @@ export const PROVINCIAL_DETAILS: Record<ProvinceCode, {
   sewerWaterSepticMultiplier: number;
   permitFeesMultiplier: number;
 }> = {
-  'AB': { baseMultiplier: 1.07, foundationMultiplier: 1.28, shippingKm: 1340, sewerWaterSepticMultiplier: 1.41, permitFeesMultiplier: 1.60 },
-  'BC': { baseMultiplier: 1.15, foundationMultiplier: 1.60, shippingKm: 2140, sewerWaterSepticMultiplier: 1.76, permitFeesMultiplier: 3.00 },
+  'AB': { baseMultiplier: 1.06, foundationMultiplier: 1.21, shippingKm: 1340, sewerWaterSepticMultiplier: 1.33, permitFeesMultiplier: 1.60 },
+  'BC': { baseMultiplier: 1.12, foundationMultiplier: 1.42, shippingKm: 2140, sewerWaterSepticMultiplier: 1.56, permitFeesMultiplier: 3.00 },
   'MB': { baseMultiplier: 1.00, foundationMultiplier: 1.00, shippingKm: 150, sewerWaterSepticMultiplier: 1.00, permitFeesMultiplier: 1.00 },
-  'NB': { baseMultiplier: 0.98, foundationMultiplier: 1.00, shippingKm: 2100, sewerWaterSepticMultiplier: 1.00, permitFeesMultiplier: 0.80 },
-  'NL': { baseMultiplier: 0.98, foundationMultiplier: 1.00, shippingKm: 2900, sewerWaterSepticMultiplier: 1.00, permitFeesMultiplier: 0.90 },
-  'NS': { baseMultiplier: 0.98, foundationMultiplier: 1.00, shippingKm: 2400, sewerWaterSepticMultiplier: 1.00, permitFeesMultiplier: 1.00 },
-  'ON': { baseMultiplier: 1.11, foundationMultiplier: 1.44, shippingKm: 2225, sewerWaterSepticMultiplier: 1.58, permitFeesMultiplier: 2.00 },
-  'PE': { baseMultiplier: 0.98, foundationMultiplier: 1.00, shippingKm: 2500, sewerWaterSepticMultiplier: 1.00, permitFeesMultiplier: 0.80 },
+  'NB': { baseMultiplier: 0.98, foundationMultiplier: 0.93, shippingKm: 2100, sewerWaterSepticMultiplier: 1.00, permitFeesMultiplier: 0.80 },
+  'NL': { baseMultiplier: 0.98, foundationMultiplier: 0.93, shippingKm: 2900, sewerWaterSepticMultiplier: 1.00, permitFeesMultiplier: 0.90 },
+  'NS': { baseMultiplier: 0.98, foundationMultiplier: 0.93, shippingKm: 2400, sewerWaterSepticMultiplier: 1.00, permitFeesMultiplier: 1.00 },
+  'ON': { baseMultiplier: 1.09, foundationMultiplier: 1.32, shippingKm: 2225, sewerWaterSepticMultiplier: 1.45, permitFeesMultiplier: 2.00 },
+  'PE': { baseMultiplier: 0.98, foundationMultiplier: 0.93, shippingKm: 2500, sewerWaterSepticMultiplier: 1.00, permitFeesMultiplier: 0.80 },
   'QC': { baseMultiplier: 1.00, foundationMultiplier: 1.00, shippingKm: 2300, sewerWaterSepticMultiplier: 1.00, permitFeesMultiplier: 1.40 },
   'SK': { baseMultiplier: 1.00, foundationMultiplier: 1.00, shippingKm: 780, sewerWaterSepticMultiplier: 1.00, permitFeesMultiplier: 1.00 },
-  'NT': { baseMultiplier: 1.18, foundationMultiplier: 1.72, shippingKm: 2200, sewerWaterSepticMultiplier: 1.89, permitFeesMultiplier: 1.50 },
-  'NU': { baseMultiplier: 1.22, foundationMultiplier: 1.88, shippingKm: 2300, sewerWaterSepticMultiplier: 2.07, permitFeesMultiplier: 1.80 },
-  'YT': { baseMultiplier: 1.15, foundationMultiplier: 1.60, shippingKm: 3500, sewerWaterSepticMultiplier: 1.76, permitFeesMultiplier: 1.40 }
+  'NT': { baseMultiplier: 1.17, foundationMultiplier: 1.60, shippingKm: 2200, sewerWaterSepticMultiplier: 1.75, permitFeesMultiplier: 1.50 },
+  'NU': { baseMultiplier: 1.21, foundationMultiplier: 1.74, shippingKm: 2300, sewerWaterSepticMultiplier: 1.91, permitFeesMultiplier: 1.80 },
+  'YT': { baseMultiplier: 1.15, foundationMultiplier: 1.53, shippingKm: 3500, sewerWaterSepticMultiplier: 1.68, permitFeesMultiplier: 1.40 }
 };
 
 // For backwards compatibility
