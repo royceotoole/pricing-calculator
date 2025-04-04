@@ -9,10 +9,10 @@ export type ProvinceCode =
 // Core pricing constants - easy to update in one place
 export const PRICING_CONSTANTS = {
   // Base price for all builds
-  BASE_PRICE: 205000,
+  BASE_PRICE: 204000,
   
   // Cost per square foot for different floor types
-  MAIN_FLOOR_RATE: 336,
+  MAIN_FLOOR_RATE: 335,
   SECOND_FLOOR_RATE: 166,
   
   // Early adopter discount per square foot
