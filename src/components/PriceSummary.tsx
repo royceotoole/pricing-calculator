@@ -14,6 +14,16 @@ export default function PriceSummary({ className = '', showButton = true }: Pric
   const { estimatedPrice, totalSize, location, isEarlyAdopter, getPriceDataForTypeForm, displayTotalSize } = useCalculator()
   
   const openTypeform = () => {
+    // Track the conversion event with Meta Pixel
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'InitiateCheckout', {
+        content_name: 'Custom Proposal',
+        content_category: 'Calculator',
+        value: estimatedPrice,
+        currency: 'CAD'
+      });
+    }
+    
     // Get all data from context
     const typeformData = getPriceDataForTypeForm();
     
